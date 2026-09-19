@@ -1,0 +1,23 @@
+#-------------------------------------- dataset -----------------------------------------#
+dataset: pamap2
+n_feature: 3
+len_sw: 151
+n_class: 17
+
+target_domain: 1
+n_domains: 5
+n_target_domains: 1
+
+#------------------------------------ training ------------------------------------------#
+batch_size: 64
+seed: 10
+interval_validate: 25
+out_path: './logs'
+save_model: True
+
+#-------------------------------------- model -------------------------------------------#
+model: 'cnn'
+res: false
+resume: './ckpt'
+alpha1: 0.2
+alpha2: 0.03
