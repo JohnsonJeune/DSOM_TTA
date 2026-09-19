@@ -1,0 +1,20 @@
+cff-version: 1.2.0
+message: "If you use this work, please cite the DSOM paper."
+title: "DSOM: Dual-Space Optimization via Test-Time Adaptation for Open-Set Activity Recognition"
+authors:
+  - family-names: Ye
+    given-names: Xiaohui
+  - family-names: Zhang
+    given-names: Lei
+  - family-names: Chen
+    given-names: Guangjie
+  - family-names: Song
+    given-names: Chaoda
+  - family-names: Wang
+    given-names: Shuoyuan
+  - family-names: Wu
+    given-names: Hao
+  - family-names: Song
+    given-names: Aiguo
+year: 2026
+type: article
