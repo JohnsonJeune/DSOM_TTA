@@ -4,6 +4,7 @@ from sklearn.metrics import f1_score
 import numpy as np
 import matplotlib.pyplot as plt
 from data_processing.sliding_window import sliding_window
+from device import DEVICE
 def get_sample_weights(y, weights):
     '''
     to assign weights to each sample
@@ -121,7 +122,7 @@ def mmd_custorm(sample, decoded, sigma=[1]): # 0.1, 1, 10
     loss = 0
     for v in sigma:
         kernel_val = torch.exp(exp / v)
-        kernel_val = kernel_val.cpu()
+        kernel_val = kernel_val.to(DEVICE)
         loss += torch.sum(S * kernel_val)
 
     loss_mmd = torch.sqrt(loss)

@@ -6,6 +6,7 @@ from . import memory
 import torch.nn.functional as F
 import numpy as np
 import copy
+from device import DEVICE
 # https://discuss.pytorch.org/t/calculating-the-entropy-loss/14510
 # but there is a bug in the original code: it sums up the entropy over a batch. so I take mean instead of sum
 class HLoss(nn.Module):
@@ -101,13 +102,13 @@ class NOTE(nn.Module):
                     # The pseudo-label temporarily uses 0; later the model inference can also be used here
                     f_device = f.to(self.args.device)
                     logit, _ = self.model(f_device.unsqueeze(0).unsqueeze(1))
-                    pseudo_cls = logit.argmax(dim=1)[0].cpu()
+                    pseudo_cls = logit.argmax(dim=1)[0].to(DEVICE)
                     self.mem.add_instance([f, pseudo_cls, torch.tensor(0)])
                 
                 elif self.args.memory_type == 'PBRS':
                     f_device = f.to(self.args.device)
                     logit, _ = self.model(f_device.unsqueeze(0).unsqueeze(1))
-                    pseudo_cls = logit.argmax(dim=1)[0].cpu()
+                    pseudo_cls = logit.argmax(dim=1)[0].to(DEVICE)
                     d = torch.tensor(0)  # domain label placeholder
                     c = torch.tensor(0)  # ground-truth label placeholder
                     self.mem.add_instance([f, pseudo_cls, d, c, 0])

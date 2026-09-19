@@ -3,6 +3,7 @@ from copy import deepcopy
 import torch
 import torch.nn as nn
 import torch.jit
+from device import DEVICE
 
 
 class t3a(nn.Module):
@@ -164,7 +165,7 @@ def select_supports(self):
             indices = torch.LongTensor(list(range(len(ent_s))))
 
         indices = []
-        indices1 = torch.LongTensor(list(range(len(ent_s)))).cpu()
+        indices1 = torch.LongTensor(list(range(len(ent_s)))).to(DEVICE)
         for i in range(self.num_classes):
             _, indices2 = torch.sort(ent_s[y_hat == i])
             # print(indices2)

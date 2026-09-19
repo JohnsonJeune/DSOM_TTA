@@ -2,6 +2,7 @@ import random
 from contextlib import contextmanager
 import torch
 import torch.nn as nn
+from device import DEVICE
 
 
 class MixStyle(nn.Module):
@@ -79,8 +80,8 @@ class MixStyle(nn.Module):
 
 
 def main():
-    model = MixStyle(p=0.5, alpha=0.1).cpu()
-    input = torch.rand(30, 1, 128, 128).cpu()
+    model = MixStyle(p=0.5, alpha=0.1).to(DEVICE)
+    input = torch.rand(30, 1, 128, 128).to(DEVICE)
     output = model(input)
     print(type(output))
     # summary(model, (1, 30, 77))

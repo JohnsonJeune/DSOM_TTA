@@ -5,6 +5,7 @@ from copy import deepcopy
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+from device import DEVICE
 
 class TSD(nn.Module):
     """
@@ -78,7 +79,7 @@ class TSD(nn.Module):
             indices = torch.LongTensor(list(range(len(ent_s))))
 
         indices = []
-        indices1 = torch.LongTensor(list(range(len(ent_s)))).cpu()
+        indices1 = torch.LongTensor(list(range(len(ent_s)))).to(DEVICE)
         for i in range(self.num_classes):
             _, indices2 = torch.sort(ent_s[y_hat == i])
             indices.append(indices1[y_hat==i][indices2][:filter_K])

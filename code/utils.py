@@ -6,7 +6,7 @@ from models.cnn_mix import MixCNN_choose
 from models.adnn import adnn_choose
 
 # This project runs on CPU only: all model parameters are explicitly placed on CPU
-DEVICE = torch.device('cpu')
+from device import DEVICE
 
 
 # model

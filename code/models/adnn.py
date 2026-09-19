@@ -6,6 +6,7 @@ import matplotlib.pyplot as plt
 import sklearn.metrics as sm
 # from torchstat import stat
 import torch.nn.functional as F
+from device import DEVICE
 
 
 from torch.autograd import Function
@@ -144,7 +145,7 @@ class ResCNN_UCI(nn.Module):
         x = self.classifier(x)
         # x = nn.LayerNorm(x.size())(x.cpu())
         # x = x.cuda()
-        x = F.normalize(x.cpu())
+        x = F.normalize(x.to(DEVICE))
         return x
 
 
@@ -196,9 +197,9 @@ class CNN_UNIMIB(nn.Module):
         reverse_feature = ReverseLayerF.apply(feature, 0.1)
 
         cls_prediction = self.classifier(feature)
-        cls_prediction = nn.LayerNorm(cls_prediction.size())(cls_prediction.cpu())
-        cls_prediction = cls_prediction.cpu()
-        cls_prediction = F.normalize(cls_prediction.cpu())
+        cls_prediction = nn.LayerNorm(cls_prediction.size()).to(DEVICE)(cls_prediction)
+        cls_prediction = cls_prediction.to(DEVICE)
+        cls_prediction = F.normalize(cls_prediction.to(DEVICE))
         domain_prediction = self.domain_classifer(reverse_feature)
         return cls_prediction, feature
 
@@ -257,8 +258,8 @@ class ResCNN_UNIMIB(nn.Module):
         h3 = h3 + r
         x = h3.view(h3.size(0), -1)
         x = self.classifier(x)
-        x = nn.LayerNorm(x.size())(x.cpu())
-        x = x.cpu()
+        x = nn.LayerNorm(x.size()).to(DEVICE)(x)
+        x = x.to(DEVICE)
         # x = F.normalize(x.cuda())
         return x
 
@@ -429,8 +430,8 @@ def adnn_choose(dataset = 'uci', res=False, return_feature = False):
 
 
 def main():
-    model = adnn_choose(dataset = 'oppo', res=True).cpu()
-    input = torch.rand(3, 1, 30, 77).cpu()
+    model = adnn_choose(dataset = 'oppo', res=True).to(DEVICE)
+    input = torch.rand(3, 1, 30, 77).to(DEVICE)
     output = model(input)
     print(output.shape)
 

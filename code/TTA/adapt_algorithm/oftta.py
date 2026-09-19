@@ -2,6 +2,7 @@ from copy import deepcopy
 import torch
 import torch.nn as nn
 import torch.jit
+from device import DEVICE
 
 
 def find_bns(model, priors):
@@ -13,7 +14,7 @@ def find_bns(model, priors):
         for child_name, child in parent.named_children():
             module_name = f"{name}.{child_name}" if name else child_name
             if isinstance(child, nn.BatchNorm2d):
-                module = Weighted_BN(child, priors[index]).cpu()
+                module = Weighted_BN(child, priors[index]).to(DEVICE)
                 index +=1
                 replace_mods.append((parent, child_name, module))
             else:
@@ -174,7 +175,7 @@ def select_supports(self):
             indices = torch.LongTensor(list(range(len(ent_s))))
 
         indices = []
-        indices1 = torch.LongTensor(list(range(len(ent_s)))).cpu()
+        indices1 = torch.LongTensor(list(range(len(ent_s)))).to(DEVICE)
         for i in range(self.num_classes):
             _, indices2 = torch.sort(ent_s[y_hat == i])
             # print(indices2)

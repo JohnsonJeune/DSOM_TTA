@@ -6,6 +6,7 @@ import matplotlib.pyplot as plt
 import sklearn.metrics as sm
 # from torchstat import stat
 import torch.nn.functional as F
+from device import DEVICE
 # from models.module.mixstyle import MixStyle
 import random
 
@@ -205,7 +206,7 @@ class ResCNN_UCI(nn.Module):
         x = self.classifier(x)
         # x = nn.LayerNorm(x.size())(x.cpu())
         # x = x.cuda()
-        x = F.normalize(x.cpu())
+        x = F.normalize(x.to(DEVICE))
         return x, feature
 
 
@@ -260,8 +261,8 @@ class CNN_UNIMIB(nn.Module):
         x = x.view(x.size(0), -1)
         feature = x
         x = self.classifier(x)
-        x = nn.LayerNorm(x.size())(x.cpu())
-        x = x.cpu()
+        x = nn.LayerNorm(x.size()).to(DEVICE)(x)
+        x = x.to(DEVICE)
         # x = F.normalize(x.cuda())
         return x, feature
 
@@ -326,8 +327,8 @@ class ResCNN_UNIMIB(nn.Module):
         x = h3.view(h3.size(0), -1)
         feature = x
         x = self.classifier(x)
-        x = nn.LayerNorm(x.size())(x.cpu())
-        x = x.cpu()
+        x = nn.LayerNorm(x.size()).to(DEVICE)(x)
+        x = x.to(DEVICE)
         # x = F.normalize(x.cuda())
         return x, feature
 
@@ -504,8 +505,8 @@ def MixCNN_choose(dataset = 'uci', res=False):
 
 
 def main():
-    model = MixCNN_choose(dataset = 'oppo', res=True).cpu()
-    input = torch.rand(1, 1, 30, 77).cpu()
+    model = MixCNN_choose(dataset = 'oppo', res=True).to(DEVICE)
+    input = torch.rand(1, 1, 30, 77).to(DEVICE)
     output,feature = model(input)
     print(output.shape)
 

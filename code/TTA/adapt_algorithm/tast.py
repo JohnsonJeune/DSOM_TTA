@@ -4,6 +4,7 @@ import torch
 import torch.nn as nn
 import torch.jit
 import torch.nn.functional as F
+from device import DEVICE
 
 def softmax_entropy(x: torch.Tensor) -> torch.Tensor:
     """Entropy of softmax distribution from logits."""
@@ -164,7 +165,7 @@ class TAST(nn.Module):
         self.n_outputs = get_n_outputs(args)
         self.steps = 1
         self.mlps = BatchEnsemble(self.n_outputs, self.n_outputs // 4, self.num_ensemble,
-                                  self.init_mode).cpu()
+                                  self.init_mode).to(DEVICE)
         self.optimizer = torch.optim.Adam(self.mlps.parameters(), lr=self.args.lr)
         self.k = 1 # 1 2 4 8
 
@@ -381,7 +382,7 @@ def select_supports(self):
             indices = torch.LongTensor(list(range(len(ent_s))))
 
         indices = []
-        indices1 = torch.LongTensor(list(range(len(ent_s)))).cpu()
+        indices1 = torch.LongTensor(list(range(len(ent_s)))).to(DEVICE)
         for i in range(self.num_classes):
             _, indices2 = torch.sort(ent_s[y_hat == i])
             # print(indices2)

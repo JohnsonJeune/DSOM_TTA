@@ -6,6 +6,7 @@ import matplotlib.pyplot as plt
 import sklearn.metrics as sm
 # from torchstat import stat
 import torch.nn.functional as F
+from device import DEVICE
 
 class CNN_UCI(nn.Module):
     def __init__(self):
@@ -120,7 +121,7 @@ class ResCNN_UCI(nn.Module):
         x = self.classifier(x)
         # x = nn.LayerNorm(x.size())(x.cpu())
         # x = x.cuda()
-        x = F.normalize(x.cpu())
+        x = F.normalize(x.to(DEVICE))
         return x, features
 
 
@@ -170,8 +171,8 @@ class CNN_UNIMIB(nn.Module):
         x = x.view(x.size(0), -1)
         features = x
         x = self.classifier(x)
-        x = nn.LayerNorm(x.size())(x.cpu())
-        x = x.cpu()
+        x = nn.LayerNorm(x.size()).to(DEVICE)(x)
+        x = x.to(DEVICE)
         # x = F.normalize(x.cuda())
         return x, features
 
@@ -231,8 +232,8 @@ class ResCNN_UNIMIB(nn.Module):
         x = h3.view(h3.size(0), -1)
         features = x
         x = self.classifier(x)
-        x = nn.LayerNorm(x.size())(x.cpu())
-        x = x.cpu()
+        x = nn.LayerNorm(x.size()).to(DEVICE)(x)
+        x = x.to(DEVICE)
         # x = F.normalize(x.cuda())
         return x, features
 
@@ -476,7 +477,7 @@ class ResCNN_PAMAP2(nn.Module):
         feature = x
         x = self.classifier(x)
         x = nn.LayerNorm(x.size()[1:]).to(x.device)(x)
-        x= x.cpu()
+        x= x.to(DEVICE)
         return x, feature
 
 import torch
@@ -605,8 +606,8 @@ class ResCNN_USC(nn.Module):
         x = h3.view(h3.size(0), -1)
         feature = x
         x = self.classifier(x)
-        x = nn.LayerNorm(x.size())(x.cpu())
-        return x.cpu(), feature
+        x = nn.LayerNorm(x.size()).to(DEVICE)(x)
+        return x.to(DEVICE), feature
 
 
 
@@ -636,13 +637,13 @@ def CNN_choose(dataset = 'uci', res=False, return_feature = False):
         return model
     if dataset == 'pamap2':
         if res == False:
-            model = CNN_PAMAP2().cpu()
+            model = CNN_PAMAP2().to(DEVICE)
         else:
             model = ResCNN_PAMAP2()
         return model
     if dataset == 'usc':
         if res == False:
-            model = CNN_USC().cpu()
+            model = CNN_USC().to(DEVICE)
         else:
             model = ResCNN_USC()
         return model
@@ -656,8 +657,8 @@ def CNN_choose(dataset = 'uci', res=False, return_feature = False):
 
 
 def main():
-    model = CNN_choose(dataset = 'oppo', res=True).cpu()
-    input = torch.rand(3, 1, 30, 77).cpu()
+    model = CNN_choose(dataset = 'oppo', res=True).to(DEVICE)
+    input = torch.rand(3, 1, 30, 77).to(DEVICE)
     output = model(input)
     print(output.shape)
 

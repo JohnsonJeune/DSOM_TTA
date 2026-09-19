@@ -11,6 +11,7 @@ import argparse
 import yaml
 from utils import get_dataset, get_model
 from TTA.setup import get_adaptation
+from device import DEVICE
 
 @torch.jit.script
 def softmax_entropy(x: torch.Tensor) -> torch.Tensor:
@@ -28,9 +29,9 @@ def validate(args, model, val_loader):
     with torch.no_grad():
         for batch_idx, (image, target, domain) in enumerate(val_loader):
 
-            image = image.cpu()   
-            target = target.cpu() 
-            domain = domain.cpu()
+            image = image.to(DEVICE)
+            target = target.to(DEVICE)
+            domain = domain.to(DEVICE)
 
             output = model(image)
             print('JISUANYUANMOXIMNG')
@@ -52,7 +53,6 @@ def validate(args, model, val_loader):
 
 def main():
 
-    DEVICE = torch.device('cpu')
     # print(type(DEVICE))
     parser = argparse.ArgumentParser(description='argument setting of network')
     #---------------------------------- dataset_data -----------------------------------------#
@@ -122,13 +122,13 @@ def main():
 
     # model
     base_model = get_model(args=args)
-    base_model = base_model.cpu()
+    base_model = base_model.to(DEVICE)
 
 
     # load weights
     file_path = osp.join(args.resume, args.dataset, args.model, args.target_domain, args.dataset +'_' + args.target_domain + '_' + 'checkpoint.pth')
 
-    checkpoint = torch.load(file_path, map_location=torch.device('cpu'))
+    checkpoint = torch.load(file_path, map_location=DEVICE)
     print('load OK')
     pretrained_dict = checkpoint['model_state_dict']
 

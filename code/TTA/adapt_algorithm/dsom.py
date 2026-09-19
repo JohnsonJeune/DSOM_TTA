@@ -65,10 +65,6 @@ class dsom(nn.Module):
 
         
             self.thresh = self.args.thresh
-            self.thresh_end = self.args.thresh - self.args.thresh_gap
-            self.thresh_des = self.args.thresh_des
-            self.temp = self.args.temp
-            self.buffer_size = self.args.buffer_size
 
             self.samples_buffer = None
 
@@ -280,8 +276,8 @@ def run_test_dsom(self, pos_cfg, neg_cfg, x, model, weights, classifier, pos_cac
 
         partial_labels = ((probs[mask_partial] + self.thresh) > probs_des[mask_partial][:,0].reshape(-1,1)).long()
 
-        loss_hard = nn.CrossEntropyLoss()(logits_pasle[mask_hard] / self.temp, logits_pasle[mask_hard].detach().argmax(1))
-        loss_partial = cc_loss(logits_pasle[mask_partial], partial_labels.detach(), self.temp)
+        loss_hard = nn.CrossEntropyLoss()(logits_pasle[mask_hard], logits_pasle[mask_hard].detach().argmax(1))
+        loss_partial = cc_loss(logits_pasle[mask_partial], partial_labels.detach())
         lam_hard = sum(mask_hard.long()) / (sum(mask_hard.long()) + sum(mask_partial.long()))
         loss1 = loss_hard * lam_hard + loss_partial * (1 - lam_hard)
 
@@ -289,8 +285,6 @@ def run_test_dsom(self, pos_cfg, neg_cfg, x, model, weights, classifier, pos_cac
 
         loss1.backward()
         self.optimizer.step()
-        if self.thresh > self.thresh_end:
-            self.thresh -= self.thresh_des
 
     with torch.no_grad():
         # unpack the configuration parameters
@@ -489,8 +483,8 @@ class linear_affinity(AffinityMatrix):
         """
         return torch.matmul(X, X.t())
 
-def cc_loss(outputs, partialY, temp):
-    sm_outputs = F.softmax(outputs / temp, dim=1)
+def cc_loss(outputs, partialY):
+    sm_outputs = F.softmax(outputs, dim=1)
     final_outputs = sm_outputs * partialY
     average_loss = - torch.log(final_outputs.sum(dim=1)).mean()
     return average_loss

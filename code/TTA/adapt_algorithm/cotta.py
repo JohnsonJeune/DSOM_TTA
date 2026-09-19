@@ -7,6 +7,7 @@ import torch
 import torch.nn as nn
 from copy import deepcopy
 from .transforms_cotta import get_tta_transforms
+from device import DEVICE
 
 @torch.jit.script
 def softmax_entropy(x, x_ema):# -> torch.Tensor:
@@ -142,7 +143,7 @@ class CoTTA(nn.Module):
             for nm, m  in self.model.named_modules():
                 for npp, p in m.named_parameters():
                     if npp in ['weight', 'bias'] and p.requires_grad:
-                        mask = (torch.rand(p.shape)<self.rst).float().cpu() 
+                        mask = (torch.rand(p.shape)<self.rst).float().to(DEVICE)
                         with torch.no_grad():
                             p.data = self.model_state[f"{nm}.{npp}"] * mask + p * (1.-mask)
         return outputs_ema

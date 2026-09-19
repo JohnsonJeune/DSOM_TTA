@@ -4,6 +4,7 @@ import torch
 import torch.jit
 import torch.nn as nn
 import torch.nn.functional as F
+from device import DEVICE
 
 
 def init_random(x):
@@ -34,9 +35,9 @@ def sample_p_0(x, reinit_freq, replay_buffer, bs, im_sz, n_ch, device, y=None):
     inds = torch.randint(0, buffer_size, (bs,))
     # if cond, convert inds to class conditional inds
 
-    buffer_samples = replay_buffer[inds].cpu()
-    random_samples = init_random(x).cpu()
-    choose_random = (torch.rand(bs) < reinit_freq).float()[:, None, None, None].cpu()
+    buffer_samples = replay_buffer[inds].to(DEVICE)
+    random_samples = init_random(x).to(DEVICE)
+    choose_random = (torch.rand(bs) < reinit_freq).float()[:, None, None, None].to(DEVICE)
     samples = choose_random * random_samples + (1 - choose_random) * buffer_samples
     return samples.to(device), inds
 
@@ -60,9 +61,9 @@ def sample_q(x, f, replay_buffer, n_steps, sgld_lr, sgld_std, reinit_freq, batch
     final_samples = x_k.detach()
     # update replay buffer
     if len(replay_buffer) > 0:
-        buffer_inds = buffer_inds.cpu()
-        final_samples =final_samples.cpu()
-        replay_buffer = replay_buffer.cpu()
+        buffer_inds = buffer_inds.to(DEVICE)
+        final_samples =final_samples.to(DEVICE)
+        replay_buffer = replay_buffer.to(DEVICE)
         replay_buffer[buffer_inds] = final_samples
 
     return final_samples.to(device), init_samples.detach()

@@ -7,6 +7,7 @@ from .memory import *
 
 from .optimizer import SAM, sam_collect_params
 import torch.optim as optim
+from device import DEVICE
 
 
 
@@ -71,8 +72,8 @@ class SoTTA(nn.Module):
                 elif self.args.memory_type in ['HUS', 'ConfFIFO']:
                     f_device = f.to(self.args.device)
                     logit,_ = self.model(f_device.unsqueeze(0).unsqueeze(1))
-                    pseudo_cls = logit.argmax(1)[0].cpu()
-                    pseudo_conf = F.softmax(logit, dim=1).max(1)[0][0].cpu()
+                    pseudo_cls = logit.argmax(1)[0].to(DEVICE)
+                    pseudo_conf = F.softmax(logit, dim=1).max(1)[0][0].to(DEVICE)
                     self.mem.add_instance([f, pseudo_cls, torch.tensor(0), pseudo_conf])
                 elif self.args.memory_type == 'CSTU':
                     f_device = f.to(self.args.device)

@@ -17,7 +17,3 @@ KNN: 10                   # k-nearest-neighbor parameter (used by both rbf and k
 FORCE_SYMMETRY: false     # whether to force the affinity matrix to be symmetric
 
 thresh: 0.5
-thresh_gap: 0.1
-thresh_des: 0.05
-temp: 1.
-buffer_size: 25

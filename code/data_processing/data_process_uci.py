@@ -13,7 +13,7 @@ import pickle as cp
 from sklearn.model_selection import StratifiedShuffleSplit
 
 # This project runs on CPU only: all data/label/weight tensors are explicitly placed on CPU
-DEVICE = torch.device('cpu')
+from device import DEVICE
 
 
 # This is for parsing the X data, you can ignore it if you do not need preprocessing
