@@ -4,11 +4,42 @@
 
 DSOM is a test-time adaptation framework for sensor-based human activity recognition (HAR). It targets the practical setting in which test streams are non-i.i.d., arrive in small batches, and may contain activity categories never seen during training (open-set). Adaptation proceeds in two stages: aligning the feature space through backbone normalization, then refining prototype embeddings via energy-space optimization.
 
+## Repository Structure
 
+| Path | Description |
+| --- | --- |
+| [`code/`](code/) | Reference implementation and evaluation scripts |
+| [`docs/abstract.md`](docs/abstract.md) | Abstract and index terms |
+| [`docs/introduction.md`](docs/introduction.md) | Section I. Introduction — background, key challenges, research motivation, and main contributions |
+| [`figures/`](figures/) | Figures referenced in the introduction |
+
+## Baselines
+
+Methods compared against DSOM. The `--adaption` column gives the flag used to select each method in [`code/`](code/) — see [`code/README.md`](code/readme.md) for run instructions.
+
+| Method | `--adaption` | Description |
+| --- | --- | --- |
+| ERM | `source` | Keeps model parameters fixed at test time as the canonical baseline for transfer learning. |
+| T3A | `t3a` | Adapts the classifier by computing class prototypes from low-entropy samples. |
+| OFTTA | `offta` | Refines predictions using Exponential Decay Batch Normalization and pseudo-prototypes without relying on gradient-based optimization. |
+| PL | `pl` | Iteratively generates high-confidence pseudo-labels for online self-training and progressive adaptation. |
+| TENT | `tent` | Minimizes prediction entropy by updating only BN affine parameters during inference. |
+| LAME | `lame` | Enhances generalization via neighborhood consistency without parameter updates. |
+| SHOT | `shot` | Adapts the model with entropy minimization, class balance, and structured pseudo-labeling. |
+| TSD | `tsd` | Employs memory clustering mechanism, incorporating entropy and consistency filtering to mitigate noise from pseudo-label interference. |
+| TAST | `tast` | Aligns prediction distributions using a trainable Batch Ensemble module and prototype classifiers. |
+| TEA | `tea` | Transforms the classifier into an energy-based model and aligns via contrastive energy minimization. |
+| NOTE | `note` | Combines Instance Aware-BN and Prediction-Balanced Reservoir Sampling for stable memory adaptation. |
+| SoTTA | `sotta` | Adapts dynamically to non-stationary data streams by enforcing temporal consistency and minimizing prediction entropy. |
+| SAR | `sar` | Introduces sharpness-aware entropy minimization with reliable-sample selection to improve adaptation stability and prevent model collapse during TTA. |
+| EATA | `eata` | Extends entropy minimization with an anti-forgetting and sample-selective mechanism, filtering out non-informative samples to stabilize continual TTA. |
+| RoTTA | `rotta` | Adopts a class-balanced memory sampling strategy and robust pseudo-labels for reliable continual test-time adaptation under non-stationary shifts. |
+| CoTTA | `cotta` | Uses a mean-teacher framework with stochastic augmentation and restore operations to prevent error accumulation in long-running test-time adaptation. |
+| **DSOM** | `dsom` | **Ours.** Two-stage adaptation: feature-space alignment via backbone normalization, followed by energy-space refinement of prototype embeddings. |
 
 ## Code
 
-The implementation will be released in this repository. **Coming soon.**
+The implementation lives in [`code/`](code/). It evaluates all methods above on UCI-HAR across target domains 0–4; see [`code/readme.md`](code/readme.md) for setup and execution details.
 
 ## Citation
 

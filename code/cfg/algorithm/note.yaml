@@ -1,0 +1,20 @@
+adaption: 'note'
+
+
+use_learned_stats: false
+bn_momentum: 0.1
+
+iabn: true
+iabn_k: 35
+skip_thres: 0.5
+n_batch_size: 32
+memory_type: 'PBRS'
+update_every_x: 32
+
+
+temperature: 1.0
+
+no_adapt: false
+no_optim: false
+epoch: 2
+gpu_idx: 0

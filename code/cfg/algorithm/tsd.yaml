@@ -1,0 +1,6 @@
+#---------------------------------- adaptation -------------------------------------------#
+return_feature: False
+adaption: 'tsd'
+filter_K : 25
+lam : 0.1
+k : 3
