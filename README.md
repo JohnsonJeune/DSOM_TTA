@@ -4,18 +4,11 @@
 
 DSOM is a test-time adaptation framework for sensor-based human activity recognition (HAR). It targets the practical setting in which test streams are non-i.i.d., arrive in small batches, and may contain activity categories never seen during training (open-set). Adaptation proceeds in two stages: aligning the feature space through backbone normalization, then refining prototype embeddings via energy-space optimization.
 
-## Repository Structure
 
-| Path | Description |
-| --- | --- |
-| [`code/`](code/) | Reference implementation and evaluation scripts |
-| [`docs/abstract.md`](docs/abstract.md) | Abstract and index terms |
-| [`docs/introduction.md`](docs/introduction.md) | Section I. Introduction — background, key challenges, research motivation, and main contributions |
-| [`figures/`](figures/) | Figures referenced in the introduction |
 
 ## Baselines
 
-Methods compared against DSOM. The `--adaption` column gives the flag used to select each method in [`code/`](code/) — see [`code/README.md`](code/readme.md) for run instructions.
+Methods compared against DSOM. The `--adaption` column gives the flag used to select each method in [`code/`](code/).
 
 | Method | `--adaption` | Description |
 | --- | --- | --- |
@@ -39,7 +32,7 @@ Methods compared against DSOM. The `--adaption` column gives the flag used to se
 
 ## Code
 
-The implementation lives in [`code/`](code/). It evaluates all methods above on UCI-HAR across target domains 0–4; see [`code/readme.md`](code/readme.md) for setup and execution details.
+The implementation is in [`code/`](code/). It evaluates the methods above on UCI-HAR across target domains 0–4; see [`code/readme.md`](code/readme.md) for setup and execution details.
 
 ## Citation
 
