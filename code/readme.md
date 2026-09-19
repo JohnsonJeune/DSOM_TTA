@@ -1,10 +1,9 @@
-## OFTTA — CPU-only Test-Time Adaptation (TTA) Benchmark
+## DSOM — Test-Time Adaptation (TTA) Benchmark
 
 This project is based on the official implementation of [Optimization-Free Test-Time Adaptation for Cross-Person Activity Recognition](https://github.com/Claydon-Wang/OFTTA) (IMWUT/UbiComp 2024),
-adapted to run **on CPU only**, with 9 common TTA methods integrated on top of the original ones.
+with 9 common TTA methods integrated on top of the original ones.
 
-- Dataset: **UCI-HAR** (5 domains, leave-one-domain-out cross-validation)
-- Device: **CPU only**, no GPU / CUDA required
+- Datasets: **UCI-HAR** **OPPORTUNITY** **PAMAP2**
 - Backbone model: CNN
 
 ### Directory Structure
@@ -13,7 +12,7 @@ adapted to run **on CPU only**, with 9 common TTA methods integrated on top of t
 adapt.py                Evaluation entry point (CPU version)
 cpu_env.py              CPU fallback shim (downgrades torch CUDA APIs to no-ops)
 utils.py                Dataset / model construction (uci + cnn only)
-data_processing/        UCI data preprocessing + sliding window
+data_processing/        uci data preprocessing + sliding window
 models/                 Backbones (cnn / cnn_mix / adnn)
 TTA/setup.py            Method registration and dispatch
 TTA/adapt_algorithm/    TTA method implementations
@@ -77,7 +76,7 @@ Results are written to `./logs/<dataset>/<method>/<domain>/<timestamp>/log.txt` 
 | T3A | `t3a` | `t3a.yaml` | Test-time classifier adjustment (NeurIPS 2021) |
 | TAST | `tast` | `tast.yaml` | Nearest-neighbor self-training (ICLR 2023) |
 | TAST-BN | `tast_bn` | `tast_bn.yaml` | BN variant of TAST |
-| **OFTTA** | `offta` | `offta.yaml` | This repository's original method (IMWUT 2024) |
+| OFTTA | `offta` | `offta.yaml` | This repository's original method (IMWUT 2024) |
 | PL | `pl` | `pl.yaml` | Pseudo-labeling (ICML Workshop 2013) |
 | SHOT | `shot` | `shot.yaml` | Source hypothesis transfer (ICML 2020) |
 | SAR | `sar` | `sar.yaml` | Stable test-time adaptation (ICLR 2023) |
@@ -90,22 +89,3 @@ Results are written to `./logs/<dataset>/<method>/<domain>/<timestamp>/log.txt` 
 | **NOTE** | `note` | `note.yaml` | Online entropy minimization (NeurIPS 2022) |
 | **RoTTA** | `rotta` | `rotta.yaml` | Robust test-time adaptation |
 | **LAME** | `lame` | `lame.yaml` | Laplacian label propagation (NeurIPS 2022) |
-
-Bold entries are methods added or reworked here.
-
-### Notes on CPU Execution
-
-The main path (`adapt.py` / `utils.py` / `models/` / `data_processing/` / all methods above) is native CPU code and runs as-is.
-
-`cpu_env.py` is a fallback shim: it downgrades interfaces such as `torch.Tensor.cuda()` to return in place, preventing any legacy file that has not yet been ported from raising an error on a GPU-less machine. It is imported at the top of `adapt.py`, ahead of any TTA algorithm module.
-
-### Citation
-
-```bibtex
-@article{wang2024optimization,
-  title={Optimization-Free Test-Time Adaptation for Cross-Person Activity Recognition},
-  author={Wang, Shuoyuan and Wang, Hangwei and Wang, Jindong and Xie, Xin and others},
-  journal={Proceedings of the ACM on Interactive, Mobile, Wearable and Ubiquitous Technologies},
-  year={2024}
-}
-```

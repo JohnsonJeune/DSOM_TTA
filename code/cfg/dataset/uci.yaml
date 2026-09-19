@@ -17,7 +17,7 @@ n_target_domains: 1
 
 #------------------------------------ training -------------------------------------------#
 # the number of samples per batch during training is 180
-batch_size: 1
+batch_size: 64
 # set the random seed to 10 to ensure the reproducibility of the experiments
 seed: 10
 # validate once every 25 training batches
