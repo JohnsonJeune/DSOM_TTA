@@ -253,7 +253,7 @@ def get_logits(x, model, weights, classifier):
 
 @torch.enable_grad() 
 def run_test_dsom(self, pos_cfg, neg_cfg, x, model, weights, classifier, pos_cache, neg_cache):
-    steps = 2
+    steps = 1
     for i in range(steps):
         self.optimizer.zero_grad()
 
@@ -380,35 +380,6 @@ def get_num_classes(args):
 
     return num_classes
 
-import torch
-import torch.nn.functional as F
-
-def infoNCE_loss(sample_probs, proto_prob, reduction="mean"):
-    """
-    sample_probs: Tensor [B, D]  - B samples
-    proto_prob:   Tensor [K, D]  - K prototypes
-    reduction: "mean" or "none"
-    """
-    # normalize to the unit sphere (cosine similarity)
-    sample_norm = F.normalize(sample_probs, p=2, dim=-1)  # [B, D]
-    proto_norm = F.normalize(proto_prob, p=2, dim=-1)     # [K, D]
-
-    # similarity matrix [B, K]
-    sim_matrix = torch.matmul(sample_norm, proto_norm.t())
-
-    # find the nearest prototype index for each sample
-    k_star = torch.argmax(sim_matrix, dim=1)  # [B]
-
-    # softmax over prototypes
-    log_probs = F.log_softmax(sim_matrix, dim=1)  # [B, K]
-
-    # take the positive log prob
-    loss = -log_probs[torch.arange(sim_matrix.size(0)), k_star]  # [B]
-
-    if reduction == "mean":
-        return loss.mean()
-    else:
-        return loss
 
 def entropy_energy(Y, unary, pairwise, bound_lambda):
     """
