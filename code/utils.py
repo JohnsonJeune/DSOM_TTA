@@ -5,7 +5,7 @@ from models.cnn import CNN_choose
 from models.cnn_mix import MixCNN_choose
 from models.adnn import adnn_choose
 
-# This project runs on CPU only: all model parameters are explicitly placed on CPU
+# All model parameters are placed on DEVICE (the first CUDA device when one is available)
 from device import DEVICE
 
 

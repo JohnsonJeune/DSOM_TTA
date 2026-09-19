@@ -12,7 +12,7 @@ import scipy.io
 import pickle as cp
 from sklearn.model_selection import StratifiedShuffleSplit
 
-# This project runs on CPU only: all data/label/weight tensors are explicitly placed on CPU
+# All data/label/weight tensors are placed on DEVICE (the first CUDA device when one is available)
 from device import DEVICE
 
 
@@ -153,7 +153,7 @@ def prep_domains_ucihar(args, SLIDING_WINDOW_LEN=0, SLIDING_WINDOW_STEP=0):
      
     x = np.transpose(x.reshape((-1, 1, 128, 9)), (0, 2, 1, 3)).astype(np.float32)
     unique_y, counts_y = np.unique(y, return_counts=True)
-    # device=cpu: the class weight tensor is explicitly placed on CPU
+    # the class weight tensor is placed on DEVICE to match the tensors it is combined with
     weights = 100.0 / torch.tensor(counts_y, dtype=torch.float64, device=DEVICE)
     sample_weights = get_sample_weights(y, weights)
     sampler = torch.utils.data.sampler.WeightedRandomSampler(weights=sample_weights, num_samples=len(sample_weights), replacement=True)

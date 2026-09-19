@@ -5,23 +5,34 @@ with 9 common TTA methods integrated on top of the original ones.
 
 - Datasets: **UCI-HAR** **OPPORTUNITY** **PAMAP2**
 - Backbone model: CNN
+- Device: GPU via CUDA, with automatic CPU fallback
+
+### Device Selection
+
+`device.py` resolves `DEVICE` once at import time:
+
+```python
+DEVICE = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
+```
+
+Every tensor and module transfer in the codebase targets `DEVICE`, so the project runs on the first CUDA device when one is present and falls back to CPU otherwise. No code change is needed to switch between the two — only the environment changes.
 
 ### Directory Structure
 
 ```
-adapt.py                Evaluation entry point (CPU version)
-cpu_env.py              CPU fallback shim (downgrades torch CUDA APIs to no-ops)
-utils.py                Dataset / model construction (uci + cnn only)
-data_processing/        uci data preprocessing + sliding window
-models/                 Backbones (cnn / cnn_mix / adnn)
-TTA/setup.py            Method registration and dispatch
-TTA/adapt_algorithm/    TTA method implementations
-cfg/dataset/uci.yaml    Dataset configuration
-cfg/algorithm/*.yaml    Per-method hyperparameter configuration
-scripts/uci/            Batch run scripts per method (iterates domains 0-4)
-adapt.sh                Run every method in one go
-data/uci/               UCI-HAR data
-ckpt/uci/cnn/<domain>/  Pretrained source model weights
+adapt.py                     Evaluation entry point
+device.py                    Shared DEVICE selection (CUDA when available, else CPU)
+utils.py                     Dataset / model construction (uci + cnn only)
+data_processing/             Dataset preprocessing + sliding window
+models/                      Backbones (cnn / cnn_mix / adnn)
+TTA/setup.py                 Method registration and dispatch
+TTA/adapt_algorithm/         TTA method implementations
+cfg/dataset/*.yaml           Dataset configuration (uci / oppo / pamap2)
+cfg/algorithm/*.yaml         Per-method hyperparameter configuration
+scripts/<dataset>/           Batch run scripts per method
+adapt.sh                     Run every UCI-HAR method in one go
+data/<dataset>/              Dataset files
+ckpt/<dataset>/cnn/<domain>/ Pretrained source model weights
 ```
 
 ### Installation
@@ -30,14 +41,16 @@ ckpt/uci/cnn/<domain>/  Pretrained source model weights
 conda create -y -n oftta python=3.9
 conda activate oftta
 
-# Make sure to install torch from the CPU index-url
-pip install torch --index-url https://download.pytorch.org/whl/cpu
+# CUDA build (installs the matching CUDA runtime).
+# For a CPU-only machine instead:
+#   pip install torch --index-url https://download.pytorch.org/whl/cpu
+pip install torch
 pip install -r requirements.txt
 ```
 
 ### Running
 
-A single evaluation (OFTTA on domain 0):
+A single evaluation (OFTTA on UCI-HAR domain 0):
 
 ```bash
 python adapt.py \
@@ -46,13 +59,15 @@ python adapt.py \
     --algorithm_cfg ./cfg/algorithm/oftta.yaml
 ```
 
-Run all domains for one method:
+Run all target domains for one method — each dataset uses its own domain set:
 
 ```bash
-bash scripts/uci/adapt_oftta_uci.sh
+bash scripts/uci/adapt_oftta_uci.sh        # UCI-HAR,    domains 0 1 2 3 4
+bash scripts/oppo/adapt_oftta_oppo.sh      # OPPORTUNITY, domains S1 S2 S3 S4
+bash scripts/pamap2/adapt_oftta_pamap2.sh  # PAMAP2,     domains 1 2 3 4 5
 ```
 
-Run every method:
+Run every UCI-HAR method:
 
 ```bash
 bash adapt.sh
