@@ -129,7 +129,7 @@ def forward_and_adapt(self, x, model, classifier, optimizer):
         self.supports = torch.cat([self.supports, feature]) # (class, feature_dim) + batchsize(32)
         # print(self.supports.shape, 'support')
         self.labels = torch.cat([self.labels, yhat]) #  7,7 + batchsize(32)
-        self.ent = torch.cat([self.ent, ent]) #  7 + batchsize(32) # 全部添加进来
+        self.ent = torch.cat([self.ent, ent]) #  7 + batchsize(32) # all of them are added
         # self.flag+=1
 
         supports, labels = select_supports(self) # ranking and choose low-entropy
@@ -168,13 +168,13 @@ def select_supports(self):
         for i in range(self.num_classes):
             _, indices2 = torch.sort(ent_s[y_hat == i])
             # print(indices2)
-            indices.append(indices1[y_hat==i][indices2][:filter_K]) # 筛选前多少个熵小于的
+            indices.append(indices1[y_hat==i][indices2][:filter_K]) # keep the first how many with the lowest entropy
         indices = torch.cat(indices)
 
 
-        self.supports = self.supports[indices] #加入到supports里
+        self.supports = self.supports[indices] # add into supports
         # print(self.supports.shape, 'support')
-        self.labels = self.labels[indices]  #按照顺序排的
+        self.labels = self.labels[indices]  # arranged in order
         # print(self.labels)
         self.ent = self.ent[indices]
 
@@ -218,7 +218,7 @@ def load_model_and_optimizer(model, optimizer, model_state, optimizer_state):
 def configure_model(model):
     """Configure model for use with tent."""
     # train mode, because tent optimizes the model to minimize entropy
-    # model.train() # 使用新的bn
+    # model.train() # use the new bn
     model.eval()
     # # disable grad, frozen model
     model.requires_grad_(False)

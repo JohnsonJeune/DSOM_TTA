@@ -1,43 +1,44 @@
-## DSOM — 测试时自适应(TTA)评测工程
+## OFTTA — CPU-only Test-Time Adaptation (TTA) Benchmark
 
-本工程基于 [Optimization-Free Test-Time Adaptation for Cross-Person Activity Recognition](https://github.com/Claydon-Wang/OFTTA)(IMWUT/UbiComp 2024)官方实现,
-并在原有方法基础上集成了 9 个常见的 TTA 方法。
+This project is based on the official implementation of [Optimization-Free Test-Time Adaptation for Cross-Person Activity Recognition](https://github.com/Claydon-Wang/OFTTA) (IMWUT/UbiComp 2024),
+adapted to run **on CPU only**, with 9 common TTA methods integrated on top of the original ones.
 
-- 数据集:**UCI-HAR** **OPPORTUNITY** **PAMAP2**
-- 后端模型:CNN
+- Dataset: **UCI-HAR** (5 domains, leave-one-domain-out cross-validation)
+- Device: **CPU only**, no GPU / CUDA required
+- Backbone model: CNN
 
-### 目录结构
+### Directory Structure
 
 ```
-adapt.py                评测入口(CPU 版)
-cpu_env.py              CPU 兜底垫片(把 torch 的 CUDA 接口降级为 no-op)
-utils.py                数据集 / 模型构建(只保留 uci + cnn)
-data_processing/        uci 数据预处理 + 滑窗
-models/                 骨干网络(cnn / cnn_mix / adnn)
-TTA/setup.py            方法注册与分发
-TTA/adapt_algorithm/    各 TTA 方法实现
-cfg/dataset/uci.yaml    数据集配置
-cfg/algorithm/*.yaml    各方法的超参配置
-scripts/uci/            各方法的批量运行脚本(遍历 domain 0~4)
-adapt.sh                一键跑完全部方法
-data/uci/               UCI-HAR 数据
-ckpt/uci/cnn/<domain>/  预训练源模型权重
+adapt.py                Evaluation entry point (CPU version)
+cpu_env.py              CPU fallback shim (downgrades torch CUDA APIs to no-ops)
+utils.py                Dataset / model construction (uci + cnn only)
+data_processing/        UCI data preprocessing + sliding window
+models/                 Backbones (cnn / cnn_mix / adnn)
+TTA/setup.py            Method registration and dispatch
+TTA/adapt_algorithm/    TTA method implementations
+cfg/dataset/uci.yaml    Dataset configuration
+cfg/algorithm/*.yaml    Per-method hyperparameter configuration
+scripts/uci/            Batch run scripts per method (iterates domains 0-4)
+adapt.sh                Run every method in one go
+data/uci/               UCI-HAR data
+ckpt/uci/cnn/<domain>/  Pretrained source model weights
 ```
 
-### 安装
+### Installation
 
 ```bash
 conda create -y -n oftta python=3.9
 conda activate oftta
 
-# 务必用 CPU index-url 装 torch
+# Make sure to install torch from the CPU index-url
 pip install torch --index-url https://download.pytorch.org/whl/cpu
 pip install -r requirements.txt
 ```
 
-### 运行
+### Running
 
-单次评测(以 OFTTA 在 domain 0 上为例):
+A single evaluation (OFTTA on domain 0):
 
 ```bash
 python adapt.py \
@@ -46,49 +47,65 @@ python adapt.py \
     --algorithm_cfg ./cfg/algorithm/oftta.yaml
 ```
 
-批量跑完某个方法的全部 domain:
+Run all domains for one method:
 
 ```bash
 bash scripts/uci/adapt_oftta_uci.sh
 ```
 
-一键跑完全部方法:
+Run every method:
 
 ```bash
 bash adapt.sh
 ```
 
-如果 `python` 不在 PATH 或指向了别的环境,用 `PY` 变量覆盖:
+If `python` is not on PATH or points to another environment, override it with the `PY` variable:
 
 ```bash
 PY=/path/to/python bash adapt.sh
 ```
 
-结果默认写到 `./logs/<dataset>/<method>/<domain>/<时间戳>/log.txt`,含 `Source Accuracy` 与 `Adapt Accuracy`。
+Results are written to `./logs/<dataset>/<method>/<domain>/<timestamp>/log.txt` by default, and contain `Source Accuracy` and `Adapt Accuracy`.
 
-### 支持的方法
+### Supported Methods
 
-| 方法 | `--adaption` | 配置文件 | 说明 |
+| Method | `--adaption` | Config file | Description |
 |:--|:--|:--|:--|
-| Source | `source` | `source.yaml` | 源模型基线,不做自适应 |
-| NORM | `norm` | `norm.yaml` | 测试时批统计归一化 |
-| TENT | `tent` | `tent.yaml` | 熵最小化(ICLR 2021) |
-| T3A | `t3a` | `t3a.yaml` | 测试时分类器调整(NeurIPS 2021) |
-| TAST | `tast` | `tast.yaml` | 最近邻自训练(ICLR 2023) |
-| TAST-BN | `tast_bn` | `tast_bn.yaml` | TAST 的 BN 变体 |
-| OFTTA | `offta` | `offta.yaml` | 本仓库方法(IMWUT 2024) |
-| PL | `pl` | `pl.yaml` | 伪标签(ICML Workshop 2013) |
-| SHOT | `shot` | `shot.yaml` | 源假设迁移(ICML 2020) |
-| SAR | `sar` | `sar.yaml` | 稳定测试时自适应(ICLR 2023) |
-| **DSOM** | `dsom` | `dsom.yaml` | 双空间优化测试时自适应 |
-| **EATA** | `eata` | `eata.yaml` | 高效抗遗忘 TTA(ICML 2022) |
-| **SoTTA** | `sotta` | `sotta.yaml` | 噪声鲁棒 TTA(NeurIPS 2023) |
-| **CoTTA** | `cotta` | `cotta.yaml` | 持续 TTA(CVPR 2022) |
-| **TSD** | `tsd` | `tsd.yaml` | 测试时自蒸馏(CVPR 2023) |
-| **TEA** | `tea` | `tea.yaml` | 能量模型测试时自适应 |
-| **NOTE** | `note` | `note.yaml` | 在线熵最小化(NeurIPS 2022) |
-| **RoTTA** | `rotta` | `rotta.yaml` | 鲁棒测试时自适应 |
-| **LAME** | `lame` | `lame.yaml` | 拉普拉斯标签传播(NeurIPS 2022) |
+| Source | `source` | `source.yaml` | Source-model baseline, no adaptation |
+| NORM | `norm` | `norm.yaml` | Test-time batch-statistics normalization |
+| TENT | `tent` | `tent.yaml` | Entropy minimization (ICLR 2021) |
+| T3A | `t3a` | `t3a.yaml` | Test-time classifier adjustment (NeurIPS 2021) |
+| TAST | `tast` | `tast.yaml` | Nearest-neighbor self-training (ICLR 2023) |
+| TAST-BN | `tast_bn` | `tast_bn.yaml` | BN variant of TAST |
+| **OFTTA** | `offta` | `offta.yaml` | This repository's original method (IMWUT 2024) |
+| PL | `pl` | `pl.yaml` | Pseudo-labeling (ICML Workshop 2013) |
+| SHOT | `shot` | `shot.yaml` | Source hypothesis transfer (ICML 2020) |
+| SAR | `sar` | `sar.yaml` | Stable test-time adaptation (ICLR 2023) |
+| **DSOM** | `dsom` | `dsom.yaml` | Dual-space optimization test-time adaptation |
+| **EATA** | `eata` | `eata.yaml` | Efficient anti-forgetting TTA (ICML 2022) |
+| **SoTTA** | `sotta` | `sotta.yaml` | Noise-robust TTA (NeurIPS 2023) |
+| **CoTTA** | `cotta` | `cotta.yaml` | Continual TTA (CVPR 2022) |
+| **TSD** | `tsd` | `tsd.yaml` | Test-time self-distillation (CVPR 2023) |
+| **TEA** | `tea` | `tea.yaml` | Energy-model test-time adaptation |
+| **NOTE** | `note` | `note.yaml` | Online entropy minimization (NeurIPS 2022) |
+| **RoTTA** | `rotta` | `rotta.yaml` | Robust test-time adaptation |
+| **LAME** | `lame` | `lame.yaml` | Laplacian label propagation (NeurIPS 2022) |
 
+Bold entries are methods added or reworked here.
 
+### Notes on CPU Execution
 
+The main path (`adapt.py` / `utils.py` / `models/` / `data_processing/` / all methods above) is native CPU code and runs as-is.
+
+`cpu_env.py` is a fallback shim: it downgrades interfaces such as `torch.Tensor.cuda()` to return in place, preventing any legacy file that has not yet been ported from raising an error on a GPU-less machine. It is imported at the top of `adapt.py`, ahead of any TTA algorithm module.
+
+### Citation
+
+```bibtex
+@article{wang2024optimization,
+  title={Optimization-Free Test-Time Adaptation for Cross-Person Activity Recognition},
+  author={Wang, Shuoyuan and Wang, Hangwei and Wang, Jindong and Xie, Xin and others},
+  journal={Proceedings of the ACM on Interactive, Mobile, Wearable and Ubiquitous Technologies},
+  year={2024}
+}
+```

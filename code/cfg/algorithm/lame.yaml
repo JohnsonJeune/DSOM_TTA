@@ -1,9 +1,9 @@
 adaption: 'lame'
 
 
-AFFINITY: 'kNN'          # 可选项: 'rbf', 'kNN', 'linear'# 可选项: 'rbf', 'kNN', 'linear'
-SIGMA: 1.0               # RBF核带宽（仅对 rbf_affinity 有效）
-KNN: 10                  # k近邻参数（rbf 和 kNN 都会使用）
-FORCE_SYMMETRY: false     # 是否强制对称 affinity 矩阵
+AFFINITY: 'kNN'          # options: 'rbf', 'kNN', 'linear'# options: 'rbf', 'kNN', 'linear'
+SIGMA: 1.0               # RBF kernel bandwidth (only effective for rbf_affinity)
+KNN: 10                  # k-nearest-neighbor parameter (used by both rbf and kNN)
+FORCE_SYMMETRY: false     # whether to force the affinity matrix to be symmetric
 
 

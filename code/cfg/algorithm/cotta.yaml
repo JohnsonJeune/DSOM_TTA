@@ -3,13 +3,13 @@ adaption: cotta
 ARCH: Standard
 
 
-N_AUGMENTATIONS: 32   # ✅ 必须添加，用于CoTTA中的多个增强投票预测
+N_AUGMENTATIONS: 32   # ✅ required, used for the multiple augmentation voting predictions in CoTTA
 
 
-MOMENTUM: 0.999        # ✅ 用于 EMA 更新
+MOMENTUM: 0.999        # ✅ used for the EMA update
 
 
-RST: 0.01              # ✅ 概率性恢复比例
-AP: 0.92               # ✅ anchor预测置信度阈值
+RST: 0.01              # ✅ stochastic restoration ratio
+AP: 0.92               # ✅ anchor prediction confidence threshold
 
 NOISE_STD: 0.005

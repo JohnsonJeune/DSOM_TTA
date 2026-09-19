@@ -199,23 +199,23 @@ class HUS:
         """
         instance: [feat, pseudo_cls, domain, confidence]
         """
-        # 确保输入实例包含4个元素：特征、伪标签、域信息、置信度
+        # Make sure the input instance contains 4 elements: feature, pseudo-label, domain information, confidence
         assert len(instance) == 4
-        # 提取实例的伪标签，用于后续归类存储
+        # Extract the pseudo-label of the instance, used for subsequent categorized storage
         cls = instance[1]
-        # 增加当前伪标签类别遇到的实例计数
+        # Increment the count of instances encountered for the current pseudo-label class
         self.counter[cls] += 1
-        # 初始化添加标志，默认为True（允许添加）
+        # Initialize the add flag, defaulting to True (addition allowed)
         is_add = True
 
-        # 若设置了置信度阈值且当前实例置信度低于阈值，则拒绝添加
+        # If a confidence threshold is set and the confidence of the current instance is below the threshold, reject the addition
         if self.threshold is not None and instance[3] < self.threshold:
             is_add = False
-        # 若内存容量已满，则尝试移除实例以腾出空间，移除结果决定是否允许添加新实例
+        # If the memory capacity is already full, try to remove an instance to make room; the removal result decides whether a new instance may be added
         elif self.get_occupancy() >= self.capacity:
             is_add = self.remove_instance(cls)
 
-        # 当允许添加时，将实例各分量存入对应类别的内存列表中
+        # When addition is allowed, store each component of the instance into the memory list of the corresponding class
         if is_add:
             for i, dim in enumerate(self.data[cls]):
                 dim.append(instance[i])
@@ -234,33 +234,33 @@ class HUS:
 
     def remove_instance(self, cls):
         """
-        从内存中移除实例，优先从占用量最大的类别中移除，以维持内存容量平衡
+        Remove an instance from memory, preferring to remove from the class with the largest occupancy, in order to keep the memory capacity balanced
         
         Args:
-            cls: 当前待添加实例的伪标签类别
+            cls: pseudo-label class of the instance currently to be added
         Returns:
-            bool: 移除操作是否成功（此处恒为True，因移除逻辑确保至少会移除一个实例）
+            bool: whether the removal operation succeeded (always True here, since the removal logic guarantees that at least one instance is removed)
         """
-        # 获取当前占用量最大的类别索引列表（可能存在多个类别占用量相同且最大）
+        # Get the list of indices of the classes with the largest current occupancy (there may be several classes with the same maximum occupancy)
         largest_indices = self.get_largest_indices()
         
-        # 若当前类别不在占用量最大的类别中，则随机选择一个占用量最大的类别进行移除
+        # If the current class is not among the classes with the largest occupancy, randomly choose one of those classes to remove from
         if cls not in largest_indices:
             largest = random.choice(largest_indices)
-            # 获取目标类别中待移除实例的索引（默认随机选择，可通过重写get_target_index自定义策略）
+            # Get the index of the instance to remove in the target class (randomly chosen by default; the strategy can be customized by overriding get_target_index)
             tgt_idx = self.get_target_index(self.data[largest][3])
-            # 从目标类别的所有维度数据中移除对应索引的实例
+            # Remove the instance at the corresponding index from all dimension data of the target class
             for dim in self.data[largest]:
                 dim.pop(tgt_idx)
-        # 若当前类别本身就是占用量最大的类别之一，则直接从当前类别中移除实例
+        # If the current class is itself one of the classes with the largest occupancy, remove the instance directly from the current class
         else:
-            # 获取当前类别中待移除实例的索引
+            # Get the index of the instance to remove in the current class
             tgt_idx = self.get_target_index(self.data[cls][3])
-            # 从当前类别的所有维度数据中移除对应索引的实例
+            # Remove the instance at the corresponding index from all dimension data of the current class
             for dim in self.data[cls]:
                 dim.pop(tgt_idx)
         
-        # 移除操作必定成功，返回True
+        # The removal operation always succeeds, return True
         return True
 
     def reset_value(self, feats, cls, aux):
@@ -276,10 +276,10 @@ class HUS:
 
 def build_memory(args):
     """
-    构造 memory 实例，根据 args.memory_type 调用不同策略。
+    Construct a memory instance, calling a different strategy according to args.memory_type.
     """
     memory_type = args.memory_type.lower()
-    capacity = args.update_every_x  # 通常对应 memory buffer 的容量
+    capacity = args.update_every_x  # usually corresponds to the capacity of the memory buffer
 
     if memory_type == 'fifo':
         return FIFO(capacity)

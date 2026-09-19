@@ -1,10 +1,10 @@
-# 纯 CPU 环境依赖(不需要 CUDA / GPU)
+# Pure CPU environment dependencies (no CUDA / GPU needed)
 #
-# 推荐安装步骤:
+# Recommended installation steps:
 #   pip install torch --index-url https://download.pytorch.org/whl/cpu
 #   pip install -r requirements.txt
 #
-# 注意:请务必用上面的 CPU index-url 装 torch,否则 pip 默认可能拉到体积巨大的 CUDA 版。
+# Note: be sure to install torch with the CPU index-url above, otherwise pip may by default pull the huge CUDA build.
 
 torch>=2.0
 numpy
@@ -13,6 +13,6 @@ scikit-learn
 PyYAML
 matplotlib
 
-# 可选:仅用于统计每个 batch 的推理内存(RSS)。
-# 缺失时 adapt.py 会自动降级为 0,不影响任何功能。
+# Optional: used only to measure the inference memory (RSS) of each batch.
+# When missing, adapt.py automatically falls back to 0, without affecting any functionality.
 psutil

@@ -18,12 +18,12 @@ class SoTTA(nn.Module):
         self.model = configure_model(model, args)
         model_params, _ = sam_collect_params(model)
 
-        # 实例化 SAM 优化器
+        # Instantiate the SAM optimizer
         self.optimizer = SAM(
         model_params, 
         base_optimizer=optim.SGD, 
         rho=0.05, 
-        adaptive=True,  # 直接写死为 True 或 False
+        adaptive=True,  # hard-coded directly to True or False
         lr=0.001,
         momentum=0.9
     )
@@ -112,7 +112,7 @@ def forward_and_adapt_sotta(self, x):
             output,_ = self.model(x)
             return output, 0
 
-    # 从 memory 获取样本
+    # Get samples from memory
     if self.args.memory_type == 'CSTU':
         feats, _ = self.mem.get_memory()
     else:
@@ -135,7 +135,7 @@ def forward_and_adapt_sotta(self, x):
             loss.backward()
 
             if hasattr(self.optimizer, "first_step"):
-                #print('使用 SAM 优化器')
+                #print('using the SAM optimizer')
                 self.optimizer.first_step(zero_grad=True)
 
                 # forward-backward for the second step
@@ -159,11 +159,11 @@ def collect_params(model, freeze_top=False):
 
 def configure_model(model, args):
     """
-    配置模型：冻结除 BN / LN / IN 层以外的所有参数，
-    并设置 BN 的运行模式（track_running_stats）以及动量。
+    Configure the model: freeze all parameters except the BN / LN / IN layers,
+    and set the running mode of BN (track_running_stats) as well as the momentum.
     """
     model.train()
-    model.requires_grad_(False)  # 冻结全部参数
+    model.requires_grad_(False)  # freeze all parameters
 
     for module in model.modules():
         if isinstance(module, (nn.BatchNorm1d, nn.BatchNorm2d)):

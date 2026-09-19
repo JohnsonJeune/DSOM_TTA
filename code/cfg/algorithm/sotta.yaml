@@ -2,13 +2,13 @@ adaption: 'sotta'
 
 update_every_x: 32
 online: true
-memory_type: "HUS"    # memory buffer 类型，可选 FIFO / Reservoir / PBRS / HUS
+memory_type: "HUS"    # memory buffer type, options: FIFO / Reservoir / PBRS / HUS
 
 temperature: 1.0
 loss_scaler: 0.0
-inner_batch_size: 32                # 每个 mini-batch 的大小
-learning_rate: 0.001          # 可选: 如不指定，将采用默认
-weight_decay: 0.0             # 可选
+inner_batch_size: 32                # size of each mini-batch
+learning_rate: 0.001          # optional: if not specified, the default is used
+weight_decay: 0.0             # optional
 
 use_learned_stats: false
 bn_momentum: 0.01

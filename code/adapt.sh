@@ -1,11 +1,11 @@
 #!/bin/bash
-# UCI-HAR 全方法评测:每个脚本遍历 target_domain 0~4。
-# 纯 CPU 运行;预训练权重在 ./ckpt/uci/cnn/<domain>/,数据在 ./data/uci/。
+# UCI-HAR evaluation of all methods: each script iterates over target_domain 0~4.
+# Runs on pure CPU; pretrained weights are in ./ckpt/uci/cnn/<domain>/, data in ./data/uci/.
 set -u
 
 cd "$(dirname "$0")"
 
-# ---- 原有方法 ----
+# ---- existing methods ----
 bash scripts/uci/adapt_source_uci.sh
 bash scripts/uci/adapt_norm_uci.sh
 bash scripts/uci/adapt_t3a_uci.sh
@@ -17,7 +17,7 @@ bash scripts/uci/adapt_tast_uci.sh
 bash scripts/uci/adapt_tast_bn_uci.sh
 bash scripts/uci/adapt_oftta_uci.sh
 
-# ---- 新增方法 ----
+# ---- newly added methods ----
 bash scripts/uci/adapt_dsom_uci.sh
 bash scripts/uci/adapt_eata_uci.sh
 bash scripts/uci/adapt_sotta_uci.sh

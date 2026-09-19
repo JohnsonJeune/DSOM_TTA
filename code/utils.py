@@ -5,7 +5,7 @@ from models.cnn import CNN_choose
 from models.cnn_mix import MixCNN_choose
 from models.adnn import adnn_choose
 
-# 本工程只跑 CPU:所有模型参数显式落在 CPU 上
+# This project runs on CPU only: all model parameters are explicitly placed on CPU
 DEVICE = torch.device('cpu')
 
 
@@ -25,7 +25,7 @@ def get_model(args):
 
 def get_dataset(args):
     if args.dataset != 'uci':
-        raise ValueError("本项目只保留 uci 数据集,当前 --dataset=%r" % (args.dataset,))
+        raise ValueError("this project only keeps the uci dataset, current --dataset=%r" % (args.dataset,))
     source_loader, target_loader = data_process_uci.prep_domains_ucihar(
         args, SLIDING_WINDOW_LEN=args.len_sw, SLIDING_WINDOW_STEP=int(0.5*args.len_sw))
     return source_loader, target_loader

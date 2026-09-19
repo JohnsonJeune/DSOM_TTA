@@ -1,37 +1,37 @@
 #-------------------------------------- dataset -----------------------------------------#
-# 指定使用的数据集为UCI数据集
+# specify that the dataset used is the UCI dataset
 dataset: uci
-# 表示数据集中每个样本的特征数量为9
+# the number of features of each sample in the dataset is 9
 n_feature: 9
-# 推测len_sw代表滑动窗口的长度，即每个样本的序列长度为128
+# presumably len_sw is the length of the sliding window, i.e. the sequence length of each sample is 128
 len_sw: 128
-# 表示数据集中的类别数量为6
+# the number of classes in the dataset is 6
 n_class: 6
 
-# 指定目标域的编号为1，在域适应问题中，明确了目标域
+# the id of the target domain is 1; in the domain adaptation problem this makes the target domain explicit
 target_domain: 1
-# 表示数据集中总共的域数量为4
+# the total number of domains in the dataset is 4
 n_domains: 4
-# 表示目标域的数量为1
+# the number of target domains is 1
 n_target_domains: 1
 
 #------------------------------------ training -------------------------------------------#
-# 指定训练时每个批次的样本数量为180
-batch_size: 64
-# 设置随机数种子为10，确保实验的可重复性
+# the number of samples per batch during training is 180
+batch_size: 1
+# set the random seed to 10 to ensure the reproducibility of the experiments
 seed: 10
-# 表示每训练25个批次进行一次验证
+# validate once every 25 training batches
 interval_validate: 25
-# 指定训练日志的输出路径为当前目录下的logs文件夹
+# the output path of the training log is the logs folder under the current directory
 out_path: './logs'
-# 表示训练过程中会保存模型
+# indicates that the model is saved during training
 save_model: True
 
 #-------------------------------------- model -------------------------------------------#
-# 指定使用的模型为卷积神经网络（CNN）
+# specify that the model used is a convolutional neural network (CNN)
 model: 'cnn'
-# 推测res表示是否使用残差结构，这里设置为False，即不使用残差结构
+# presumably res indicates whether to use a residual structure; here it is set to False, i.e. no residual structure
 res: false
-# 指定恢复训练时加载模型权重的路径为当前目录下的ckpt文件夹
+# the path for loading the model weights when resuming training is the ckpt folder under the current directory
 resume: './ckpt'
 

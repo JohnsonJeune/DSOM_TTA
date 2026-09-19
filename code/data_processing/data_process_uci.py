@@ -12,7 +12,7 @@ import scipy.io
 import pickle as cp
 from sklearn.model_selection import StratifiedShuffleSplit
 
-# 本工程只跑 CPU:所有数据/标签/权重张量显式落在 CPU 上
+# This project runs on CPU only: all data/label/weight tensors are explicitly placed on CPU
 DEVICE = torch.device('cpu')
 
 
@@ -114,13 +114,13 @@ class data_loader_ucihar(Dataset):
         sample, target, domain = self.samples[index], self.labels[index], self.domains[index]
         sample = self.T(sample)
         # print(sample.shape, 'before')
-        # 用 torch 的 permute 取代 np.transpose(sample, (2,1,0)):
-        # 对 torch 张量调用 numpy 会触发 __array_function__ 跨库转换,
-        # 在树莓派等 ARM 平台上 numpy 与 torch 的 ABI 不一致时会直接段错误(核心已转储)。
-        # 全程留在 torch 内,结果与原来逐元素相同。
+        # use torch's permute instead of np.transpose(sample, (2,1,0)):
+        # calling numpy on a torch tensor triggers __array_function__ cross-library conversion,
+        # which on ARM platforms such as Raspberry Pi segfaults (core dumped) when the numpy and torch ABIs are inconsistent.
+        # staying entirely inside torch gives element-wise identical results to before.
         sample = sample.permute(2, 1, 0).contiguous().to(dtype=torch.float32, device=DEVICE)
         # print(sample.shape, 'sample')
-        # 显式指定 device=cpu,避免样本张量被分配到其它设备
+        # explicitly specify device=cpu to avoid the sample tensor being allocated on another device
         target = torch.as_tensor(target, device=DEVICE)
         domain = torch.as_tensor(domain, device=DEVICE)
         return sample, target, domain
@@ -153,7 +153,7 @@ def prep_domains_ucihar(args, SLIDING_WINDOW_LEN=0, SLIDING_WINDOW_STEP=0):
      
     x = np.transpose(x.reshape((-1, 1, 128, 9)), (0, 2, 1, 3)).astype(np.float32)
     unique_y, counts_y = np.unique(y, return_counts=True)
-    # device=cpu:类别权重张量显式落在 CPU
+    # device=cpu: the class weight tensor is explicitly placed on CPU
     weights = 100.0 / torch.tensor(counts_y, dtype=torch.float64, device=DEVICE)
     sample_weights = get_sample_weights(y, weights)
     sampler = torch.utils.data.sampler.WeightedRandomSampler(weights=sample_weights, num_samples=len(sample_weights), replacement=True)

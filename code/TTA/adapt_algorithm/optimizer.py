@@ -4,7 +4,7 @@ from torch import nn
 
 def sam_collect_params(model, freeze_top=False):
     """
-    只收集 norm 层（BN / LN / GN）中 weight 和 bias 参数用于适应。
+    Only collect the weight and bias parameters of norm layers (BN / LN / GN) for adaptation.
     """
     params = []
     names = []
@@ -54,7 +54,7 @@ class SAM(torch.optim.Optimizer):
                     continue
                 p.data = self.state[p]["old_p"]  # "w"
 
-        self.base_optimizer.step()  # 正式更新
+        self.base_optimizer.step()  # actual update
 
         if zero_grad:
             self.zero_grad()
@@ -62,7 +62,7 @@ class SAM(torch.optim.Optimizer):
     @torch.no_grad()
     def step(self, closure=None):
         """
-        一般不使用 step() 方式，请使用 first_step() + second_step()。
+        Generally do not use step(); please use first_step() + second_step().
         """
         assert closure is not None, "SAM optimizer requires closure for .step()"
         closure = torch.enable_grad()(closure)

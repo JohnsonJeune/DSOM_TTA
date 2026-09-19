@@ -8,10 +8,10 @@ def get_sample_weights(y, weights):
     '''
     to assign weights to each sample
     '''
-    label_unique = np.unique(y) # 获取所有唯一标签值（按升序排列）
+    label_unique = np.unique(y) # get all unique label values (sorted in ascending order)
     sample_weights = []
     for val in y:
-        idx = np.where(label_unique == val) # 找到当前标签在唯一标签列表中的位置索引
+        idx = np.where(label_unique == val) # find the index of the current label in the unique label list
         sample_weights.append(weights[idx])
     return sample_weights
 
@@ -167,56 +167,56 @@ from sklearn.preprocessing import StandardScaler
 
 def download_dataset(dataset_name, file_url, dataset_dir):
     '''
-        数据集下载
+        Dataset download
 
-        参数:
-        dataset_name (str): 数据集的名称
-        file_url (str): 数据集的下载链接
-        dataset_dir (str): 数据集下载后存储的目录
+        Args:
+        dataset_name (str): name of the dataset
+        file_url (str): download link of the dataset
+        dataset_dir (str): directory where the dataset is stored after download
 
-        返回:
-        None: 该函数不返回任何值，若数据集已存在则直接返回，若不存在则进行下载和解压操作
+        Returns:
+        None: this function returns nothing; if the dataset already exists it returns directly, otherwise it performs the download and extraction
     '''
-    # 检查是否存在源数据,如果存在不下载任何数据返回
+    # check whether the source data exists; if it does, return without downloading anything
     if os.path.exists(dataset_dir):
         return 
 
-    print('\n==================================================【 %s 数据集下载】===================================================\n'%(dataset_name))
-    print('url下载地址为: %s\n'%(file_url))
+    print('\n==================================================[ %s dataset download ]===================================================\n'%(dataset_name))
+    print('url download address is: %s\n'%(file_url))
 
-    # 获取数据集存储目录的根目录
+    # get the root directory of the dataset storage path
     dir_path = dataset_dir.split('/')[0]
-    # 由于unimib数据集无法直接访问下载，这里把unimib数据集上传到github进行访问clone
-    if dataset_name == 'UniMiB-SHAR' and file_url[-4:] == '.git': 
-        # 若之前已经存在该数据集的克隆目录，先删除
+    # the unimib dataset cannot be downloaded directly, so it is uploaded to github and accessed via clone
+    if dataset_name == 'UniMiB-SHAR' and file_url[-4:] == '.git':
+        # if the clone directory of this dataset already exists, remove it first
         if os.path.exists(os.path.join(dir_path, dataset_name)):
             shutil.rmtree(os.path.join(dir_path, dataset_name))
-        # 使用git clone命令克隆数据集
+        # clone the dataset using the git clone command
         os.system('git clone %s %s/%s' % (file_url, dir_path, dataset_name))
-   
-    else: # 其他数据集
-        # 定义数据集压缩文件的存储路径
+
+    else: # other datasets
+        # define the storage path of the dataset archive file
         dataset_file_path = os.path.join(dir_path, 'dataset.zip')
-        # 使用wget命令下载数据集
+        # download the dataset using the wget command
         os.system(f"wget -O {dataset_file_path} {file_url}")
 
-        # 解压数据集
+        # extract the dataset
         while glob.glob(os.path.join(dir_path, '*.zip')):
-            # 遍历所有zip文件
+            # iterate over all zip files
             for file in glob.glob(os.path.join(dir_path, '*.zip')):
-                # 尝试不同的解压格式
+                # try different extraction formats
                 for format in ["zip", "tar", "gztar", "bztar", "xztar"]:
                     try:
-                        # 尝试解压文件
+                        # try to extract the file
                         shutil.unpack_archive(filename=file, extract_dir=dir_path, format=format)
                         break
                     except:
                         continue
-                # 删除已解压的压缩文件
+                # delete the already extracted archive file
                 os.remove(file)
 
     print()
 
-    # 检查数据集是否下载完毕
+    # check whether the dataset has been fully downloaded
     if not os.path.exists(dataset_dir):
-        quit('数据集下载失败，请检查url与网络后重试')
+        quit('dataset download failed, please check the url and network and retry')

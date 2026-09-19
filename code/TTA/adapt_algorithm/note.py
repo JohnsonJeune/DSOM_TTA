@@ -14,7 +14,7 @@ class HLoss(nn.Module):
         self.temp_factor = temp_factor
 
     def forward(self, x):
-        #print('这里使用了HLOSS')
+        #print('HLOSS is used here')
         softmax = F.softmax(x/self.temp_factor, dim=1)
         entropy = -softmax * torch.log(softmax+1e-6)
         b = entropy.mean()
@@ -41,14 +41,14 @@ class NOTE(nn.Module):
     def forward(self, x, current_num_sample=None):
         """
         x: Tensor, shape (B,1,T,C)
-        current_num_sample: 当前批次第一个样本编号（可选）
+        current_num_sample: index of the first sample in the current batch (optional)
         """
         if self.episodic:
             self.reset()
 
         B = x.size(0)
 
-        # 如果 memory 还没初始化，用第一个样本初始化一次
+        # If memory has not been initialized yet, initialize it once with the first sample
         if self.mem.get_occupancy() == 0:
             with torch.no_grad():
                 f = x[0,:,:,:]          # (1,T,C)
@@ -56,19 +56,19 @@ class NOTE(nn.Module):
                 self.update_memory(f, current_num_sample=1)
                 #print("[NOTE] Initialized memory from batch x[0]")
 
-            # 若 batch 大于1，后续样本从索引1开始
+            # If the batch is larger than 1, subsequent samples start from index 1
             start_idx = 1
         else:
             start_idx = 0
 
-        # 其余样本逐个加入 memory
+        # Add the remaining samples to memory one by one
         for i in range(start_idx, B):
             f = x[i,:,:,:]            # (1,T,C)
 
             current_idx = current_num_sample + i if current_num_sample is not None else None
             self.update_memory(f, current_num_sample=current_idx)
 
-        # batch-wise 只做一次 adaptation
+        # Do adaptation only once in a batch-wise manner
         outputs, _ = forward_and_adapt_note(x, self.model, self.optimizer, self.mem, self.entropy_loss, self.args)
 
         return outputs
@@ -78,27 +78,27 @@ class NOTE(nn.Module):
 
     def update_memory(self, batch_x, current_num_sample=None):
         """
-        批量更新 NOTE memory buffers，batch_x 形状为 (B, 1, T, C)。
+        Update the NOTE memory buffers in batch, batch_x has shape (B, 1, T, C).
 
         Args:
-            batch_x (Tensor): 输入特征，形状 (B, 1, T, C)
-            current_num_sample (int, optional): 当前样本编号（可选，用于判断是否触发评估）
+            batch_x (Tensor): Input features, of shape (B, 1, T, C)
+            current_num_sample (int, optional): index of the current sample (optional, used to decide whether evaluation is triggered)
         """
 
         B = batch_x.size(0)
 
-        # 遍历 batch 中每个样本
+        # Iterate over every sample in the batch
         for i in range(B):
             f = batch_x[i].squeeze(0)  # (T, C)
 
-            # 先加入 fifo（如果有）
-            self.fifo.add_instance([f, torch.tensor(0), torch.tensor(0)])  # c, d 默认占位 0
+            # First add to fifo (if present)
+            self.fifo.add_instance([f, torch.tensor(0), torch.tensor(0)])  # c, d default placeholder 0
 
             with torch.no_grad():
                 self.model.eval()
 
                 if self.args.memory_type in ['FIFO', 'Reservoir']:
-                    # 伪标签暂时用0，后续也可以在这里用模型推理获取
+                    # The pseudo-label temporarily uses 0; later the model inference can also be used here
                     f_device = f.to(self.args.device)
                     logit, _ = self.model(f_device.unsqueeze(0).unsqueeze(1))
                     pseudo_cls = logit.argmax(dim=1)[0].cpu()
@@ -108,14 +108,14 @@ class NOTE(nn.Module):
                     f_device = f.to(self.args.device)
                     logit, _ = self.model(f_device.unsqueeze(0).unsqueeze(1))
                     pseudo_cls = logit.argmax(dim=1)[0].cpu()
-                    d = torch.tensor(0)  # 域标签占位
-                    c = torch.tensor(0)  # 真实标签占位
+                    d = torch.tensor(0)  # domain label placeholder
+                    c = torch.tensor(0)  # ground-truth label placeholder
                     self.mem.add_instance([f, pseudo_cls, d, c, 0])
 
-        # 评估策略
+        # Evaluation strategy
         if self.args.use_learned_stats:
-            # 评估单个样本时要改成评估 batch，这里简单传入当前 batch
-            self.evaluate([batch_x, torch.zeros(B), torch.zeros(B)])  # 标签和域标签都用 0 占位
+            # When evaluating a single sample this must be changed to evaluating a batch; here the current batch is simply passed in
+            self.evaluate([batch_x, torch.zeros(B), torch.zeros(B)])  # both labels and domain labels use 0 as placeholder
         elif current_num_sample is not None and current_num_sample % self.args.update_every_x == 0:
             self.evaluate(self.fifo.get_memory())
 
@@ -143,37 +143,37 @@ def forward_and_adapt_note(x, model, optimizer, memory, entropy_loss, args):
     model.train()
     x = x.squeeze(1)  # (B, T, C)
 
-    # ⚠️ 若 memory 中样本不足，不执行适应
+    # ⚠️ If there are not enough samples in memory, skip adaptation
     if args.no_adapt or memory.get_occupancy() < args.update_every_x:
         with torch.no_grad():
             outputs, _ = model(x.unsqueeze(1))
             return outputs, 0
 
-    # ✅ Memory 取全部样本组成训练大 batch
+    # ✅ Memory takes all samples to form a large training batch
     feats, _, _ = memory.get_memory()
     feats = torch.stack(feats).to(x.device)  # (M, T, C)
     dataset = torch.utils.data.TensorDataset(feats)
     data_loader = DataLoader(dataset, batch_size=args.n_batch_size,
                                  shuffle=True, drop_last=False, pin_memory=False)
     for e in range(args.epoch):
-            # 迭代数据加载器中的每个批次
+            # Iterate over every batch in the data loader
             for batch_idx, (feats,) in enumerate(data_loader):
-                # 将特征移动到指定设备
+                # Move the features to the specified device
                 feats = feats.to(x.device)
-                # 前向传播更新 BN 层统计信息
+                # Forward pass updating the BN layer statistics
                 preds_of_data, _ = model(feats.unsqueeze(1))
 
-                # 计算损失
+                # Compute the loss
                 loss = entropy_loss(preds_of_data)
-                # 梯度清零
+                # Zero the gradients
                 optimizer.zero_grad()
-                # 反向传播计算梯度
+                # Backward pass computing the gradients
                 loss.backward()
-                # 更新模型参数
+                # Update the model parameters
                 optimizer.step()
 
 
-    # ✅ 最终返回当前输入 batch 的预测（inference only）
+    # ✅ Finally return the prediction of the current input batch (inference only)
     with torch.no_grad():
         model.eval()
         output, _ = model(x.unsqueeze(1))
@@ -226,8 +226,8 @@ def load_model_and_optimizer(model, optimizer, model_state, optimizer_state):
 
 def convert_iabn(module, args):
     """
-    递归地将 nn.BatchNorm1d/2d 替换为 InstanceAwareBatchNorm。
-    参数完全从 args 传入。
+    Recursively replace nn.BatchNorm1d/2d with InstanceAwareBatchNorm.
+    All parameters are passed in from args.
     """
     module_output = module
     if isinstance(module, nn.BatchNorm2d) or isinstance(module, nn.BatchNorm1d):
@@ -264,7 +264,7 @@ class InstanceAwareBatchNorm2d(nn.Module):
         return F.relu(x - lbd) - F.relu(-(x + lbd))
 
     def forward(self, x):
-        #print('是否为BN2D')
+        #print('whether it is BN2D')
         b, c, h, w = x.size()
         sigma2, mu = torch.var_mean(x, dim=[2, 3], keepdim=True, unbiased=True)
 
@@ -312,7 +312,7 @@ class InstanceAwareBatchNorm1d(nn.Module):
         return F.relu(x - lbd) - F.relu(-(x + lbd))
 
     def forward(self, x):
-        #print('是否为BN1D')
+        #print('whether it is BN1D')
         b, c, l = x.size()
         sigma2, mu = torch.var_mean(x, dim=2, keepdim=True, unbiased=True)
 
@@ -348,8 +348,8 @@ class InstanceAwareBatchNorm1d(nn.Module):
 
 def collect_params(model):
     """
-    收集所有 BatchNorm 和 InstanceAwareBatchNorm 中的 weight 和 bias。
-    返回两个列表：参数对象 和 参数名（可选用于调试）。
+    Collect the weight and bias of all BatchNorm and InstanceAwareBatchNorm modules.
+    Returns two lists: the parameter objects and the parameter names (optionally used for debugging).
     """
     params = []
     names = []

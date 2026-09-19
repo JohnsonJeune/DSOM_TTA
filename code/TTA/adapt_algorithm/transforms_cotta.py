@@ -3,13 +3,13 @@ import torch.nn.functional as F
 
 
 def gaussian_noise(x, std=0.01):
-    """添加高斯噪声"""
+    """Add Gaussian noise"""
     noise = torch.randn_like(x) * std
     return x + noise
 
 
 def sliding_window_smoothing(x, window_size=3):
-    """滑动窗口平滑（每个通道分别）"""
+    """Sliding window smoothing (separately for each channel)"""
     B, _, T, C = x.shape
     pad = window_size // 2
     x_padded = F.pad(x, (0, 0, pad, pad), mode='reflect')  # pad time dimension
@@ -21,7 +21,7 @@ def sliding_window_smoothing(x, window_size=3):
 
 
 def time_jitter(x, max_jitter=2):
-    """时间抖动（向前或向后移动），边界补零"""
+    """Time jitter (shift forward or backward), with zero padding at the boundaries"""
     B, _, T, C = x.shape
     x_jittered = torch.zeros_like(x)
     for b in range(B):
@@ -36,7 +36,7 @@ def time_jitter(x, max_jitter=2):
 
 
 def feature_scaling(x, scale_range=(0.9, 1.1)):
-    """每个通道乘以缩放因子"""
+    """Multiply each channel by a scaling factor"""
     B, _, T, C = x.shape
     scales = torch.empty((B, 1, 1, C), device=x.device).uniform_(*scale_range)
     return x * scales
@@ -46,8 +46,8 @@ import torch.nn.functional as F
 
 def time_crop_fill(x: torch.Tensor, crop_ratio=0.9) -> torch.Tensor:
     """
-    对时间序列进行裁剪并通过插值填补回来。
-    保证输出形状与输入一致：(B, 1, T, C)
+    Crop the time series and fill it back in by interpolation.
+    Guarantees that the output shape is consistent with the input: (B, 1, T, C)
     """
     B, _, T, C = x.shape
     crop_len = int(T * crop_ratio)
@@ -62,8 +62,8 @@ def time_crop_fill(x: torch.Tensor, crop_ratio=0.9) -> torch.Tensor:
     return x_new
 def get_tta_transforms(x: torch.Tensor, mode: str = "all", noise_std=0.01) -> torch.Tensor:
     """
-    输入：x of shape (B, 1, T, C)，类型为 torch.Tensor
-    输出：增强后的 x_aug，仍然是 (B, 1, T, C)
+    Input: x of shape (B, 1, T, C), of type torch.Tensor
+    Output: the augmented x_aug, still (B, 1, T, C)
     """
     if not isinstance(x, torch.Tensor):
         raise TypeError("Expected input to be torch.Tensor")
@@ -79,7 +79,7 @@ def get_tta_transforms(x: torch.Tensor, mode: str = "all", noise_std=0.01) -> to
     elif mode == "crop":
         return time_crop_fill(x)
     elif mode == "all":
-        # 串行应用所有增强，顺序可调
+        # Apply all augmentations serially; the order can be adjusted
         x_aug = gaussian_noise(x, std=noise_std)
         x_aug = time_crop_fill(x_aug)
         x_aug = time_jitter(x_aug)

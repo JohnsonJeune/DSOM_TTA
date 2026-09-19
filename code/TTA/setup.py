@@ -11,7 +11,7 @@ def setup_dsom(args, model):
                            episodic=True)
     return tta_model
 
-# ---- 按文件路径加载算法模块：规避模块名冲突,供 eata/rotta 这类独立实现使用 ----
+# ---- load algorithm modules by file path: avoids module name conflicts, used by standalone implementations such as eata/rotta ----
 def _load_alg(filename):
     p = os.path.join(os.path.dirname(__file__), 'adapt_algorithm', filename)
     spec = importlib.util.spec_from_file_location('alg_' + filename.replace('.py', '').replace('+', '_'), p)
@@ -122,16 +122,16 @@ def setup_tast_bn(args, model):
 
 
 def setup_oftta(args, model):
-    # 配置OFTTA适配模型 冻结不需要适配的层（如卷积层）激活需要适配的层（如BN层）的训练模式
+    # configure the OFTTA adaptation model: freeze the layers that do not need adaptation (e.g., conv layers) and enable training mode for the layers that do (e.g., BN layers)
     model = oftta.configure_model(model)
-    # 收集需要优化的参数（通常指BN层参数）（通常指BN层的权重和偏置）
+    # collect the parameters that need to be optimized (usually BN layer parameters) (usually the weight and bias of BN layers)
     params, param_names = oftta.collect_params(model)
-    # 初始化优化器（实际使用setup_optimizer中的Adam优化器）
+    # initialize the optimizer (actually the Adam optimizer in setup_optimizer)
     optimizer = setup_optimizer(args, params)
-    # 创建OFTTA适配器实例
+    # create the OFTTA adapter instance
     tta_model = oftta.OFTTA(args, model, optimizer,
-                           steps=1,       # 每个batch执行1次参数更新
-                           episodic=False) # 禁用周期性的参数重置
+                           steps=1,       # perform 1 parameter update per batch
+                           episodic=False) # disable periodic parameter reset
 
     return tta_model
 
@@ -172,11 +172,11 @@ def setup_note(args, model):
 
 def setup_sotta(args, model):
     """
-    初始化 SoTTA 流程：
-    - 配置模型（只允许 BN / LN / IN 更新）
-    - 收集参数
-    - 构建优化器（支持 SAM）
-    - 返回 SoTTA 实例
+    Initialize the SoTTA pipeline:
+    - configure the model (only BN / LN / IN are allowed to update)
+    - collect parameters
+    - build the optimizer (SAM supported)
+    - return the SoTTA instance
     """
     model = sotta.configure_model(model, args)
     params, param_names = sotta.collect_params(model)
@@ -316,7 +316,7 @@ def get_adaptation(args, base_model):
         model = setup_rotta(args, base_model)
     else:
         raise ValueError(
-            "not exist this adaptation: %r. 请检查 --adaption 是否拼写正确，"
-            "或在 TTA/setup.py 的 get_adaptation 中补充该分支。" % (args.adaption,))
+            "not exist this adaptation: %r. Please check whether --adaption is spelled correctly, "
+            "or add this branch in get_adaptation of TTA/setup.py." % (args.adaption,))
 
     return model

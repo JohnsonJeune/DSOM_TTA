@@ -162,42 +162,42 @@ def tast_adapt(self, x, supports, labels):
 
 def target_generation(self, z, supports, labels):
     """
-    生成目标标签和输出，基于输入特征与支持集之间的余弦距离进行计算。
+    Generate the target labels and outputs, computed based on the cosine distance between the input features and the support set.
 
-    :param self: 类的实例，包含模型的相关配置和参数
-    :param z: 输入特征，形状通常为 [B, dim]
-    :param supports: 支持集特征，形状通常为 [N, dim]
-    :param labels: 支持集标签，形状通常为 [N, C]
-    :return: 目标标签 (targets) 和输出 (outputs)，形状均为 [B, C]
+    :param self: instance of the class, containing the model's related configuration and parameters
+    :param z: input features, usually of shape [B, dim]
+    :param supports: support set features, usually of shape [N, dim]
+    :param labels: support set labels, usually of shape [N, C]
+    :return: target labels (targets) and outputs, both of shape [B, C]
     """
-    # 计算输入特征 z 与支持集特征 supports 之间的余弦距离
+    # Compute the cosine distance between the input features z and the support set features supports
     dist = cosine_distance_einsum(self, z, supports)
-    # 对负距离取指数，得到权重矩阵 W
+    # Exponentiate the negative distance to obtain the weight matrix W
     W = torch.exp(-dist)  # [B, N]
-    # 确定要选取的 top-k 数量，若 filter_K 不为 -1 则使用 filter_K，否则使用支持集大小除以类别数
+    # Determine the top-k to select: use filter_K if it is not -1, otherwise use the support set size divided by the number of classes
     temp_k = self.filter_K if self.filter_K != -1 else supports.size(0) // self.num_classes
-    # 取 self.k 和 temp_k 中的较小值作为最终的 top-k 数量
+    # Take the smaller of self.k and temp_k as the final top-k
     k = min(self.k, temp_k)
 
-    # 获取权重矩阵 W 中每一行的前 k 个最大值及其索引
+    # Get the top k largest values and their indices for each row of the weight matrix W
     values, indices = torch.topk(W, k, sorted=False)  # [B, k]
-    # 创建一个与 W 形状相同的零矩阵，在 top-k 索引位置填充 1，其余位置为 0
+    # Create a zero matrix with the same shape as W, fill 1 at the top-k index positions and 0 elsewhere
     topk_indices = torch.zeros_like(W).scatter_(1, indices, 1)  # [B, N] 1 for topk, 0 for else
-    # 计算支持集特征对应的 logits
+    # Compute the logits corresponding to the support set features
     temp_labels = compute_logits(self, supports, supports, labels)  # [N, C]
-    # 将 logits 转换为 one-hot 形式的目标标签
+    # Convert the logits into one-hot form target labels
     temp_labels_targets = F.one_hot(temp_labels.argmax(-1), num_classes=self.num_classes).float()  # [N, C]
-    # 对 logits 进行 softmax 操作，得到概率形式的输出标签
+    # Apply softmax to the logits to obtain probability-form output labels
     temp_labels_outputs = torch.softmax(temp_labels, -1)  # [N, C]
 
-    # 将 top-k 索引矩阵与 one-hot 目标标签矩阵相乘，得到每个输入对应的目标标签
+    # Multiply the top-k index matrix with the one-hot target label matrix to obtain the target label for each input
     targets = topk_indices @ temp_labels_targets
-    # 将 top-k 索引矩阵与概率输出标签矩阵相乘，得到每个输入对应的输出
+    # Multiply the top-k index matrix with the probability output label matrix to obtain the output for each input
     outputs = topk_indices @ temp_labels_outputs
 
-    # 对目标标签进行归一化处理，避免除零错误
+    # Normalize the target labels to avoid division by zero
     targets = targets / (targets.sum(-1, keepdim=True) + 1e-12)
-    # 对输出进行归一化处理，避免除零错误
+    # Normalize the outputs to avoid division by zero
     outputs = outputs / (outputs.sum(-1, keepdim=True) + 1e-12)
 
     return targets, outputs
@@ -249,7 +249,7 @@ def select_supports(self):
         indices1 = torch.LongTensor(list(range(len(ent_s)))).to(device)
         for i in range(self.num_classes):
             _, indices2 = torch.sort(ent_s[y_hat == i])
-              # 或者 device = y_hat.device
+              # or device = y_hat.device
             indices.append(indices1[y_hat == i][indices2.to(device)][:filter_K])
         indices = torch.cat(indices)
 
@@ -299,7 +299,7 @@ def load_model_and_optimizer(model, optimizer, model_state, optimizer_state):
 def configure_model(model):
     """Configure model for use with tent."""
     # train mode, because tent optimizes the model to minimize entropy
-    # model.train() # 使用新的bn
+    # model.train() # use the new bn
     model.train()
     # # disable grad, frozen model
     model.requires_grad_(False)

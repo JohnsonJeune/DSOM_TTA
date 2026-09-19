@@ -22,7 +22,7 @@ class LAME(nn.Module):
         super().__init__()
         self.args = args
         self.model = model
-        self.optimizer = optimizer  # LAME 不使用 optimizer，但为了统一格式保留
+        self.optimizer = optimizer  # LAME does not use optimizer, but kept for a unified format
 
         self.force_symmetry = args.FORCE_SYMMETRY
         self.affinity = eval(f'{args.AFFINITY}_affinity')(
@@ -31,11 +31,11 @@ class LAME(nn.Module):
         )
 
 
-        # 拆分模型结构
+        # Split the model structure
         self.feature_extractor = self.model
         self.classifier = get_classifier(self.args, self.model)
 
-        # 拷贝模型状态用于 reset
+        # Copy the model state for reset
         self.model_state = deepcopy(self.model.state_dict())
 
         self.configure_model()
@@ -46,43 +46,43 @@ class LAME(nn.Module):
     @torch.no_grad()
     def forward_and_adapt(self, x):
         """
-        前向传播并执行基于标签传播的自适应过程
-        利用特征 affinity 矩阵和拉普拉斯优化实现测试时自适应
+        Forward pass that performs the label-propagation-based adaptation process
+        Uses the feature affinity matrix and Laplacian optimization to achieve test-time adaptation
         
         Args:
-            x (torch.Tensor): 输入测试图像张量，形状通常为 [B, C, H, W]
+            x (torch.Tensor): Input test image tensor, usually of shape [B, C, H, W]
             
         Returns:
-            torch.Tensor: 经过标签传播优化后的分类概率分布，形状为 [B, num_classes]
+            torch.Tensor: Class probability distribution after label propagation optimization, of shape [B, num_classes]
         """
-        # 将输入重命名为更具描述性的变量，明确表示为测试图像
+        # Rename the input to a more descriptive variable, explicitly denoting test images
         imgs_test = x
 
-        # 从测试图像中提取特征，忽略特征提取器的第一个返回值
-        # 假设 feature_extractor 返回 (logits, features) 或类似格式
+        # Extract features from the test images, ignoring the first return value of the feature extractor
+        # Assume feature_extractor returns (logits, features) or a similar format
         _ ,features = self.feature_extractor(imgs_test)
         
-        # 使用分类器对提取的特征进行初始分类，获取原始输出
+        # Use the classifier to perform initial classification on the extracted features, obtaining the raw output
         outputs = self.classifier(features)
 
-        # 计算一元势能 (unary potential)，用于标签传播
-        # 公式：-log(softmax概率 + 小常数)，添加1e-10避免数值不稳定
+        # Compute the unary potential, used for label propagation
+        # Formula: -log(softmax probability + small constant), 1e-10 added to avoid numerical instability
         unary = - torch.log(outputs.softmax(dim=1) + 1e-10)
 
-        # 构建 affinity 核矩阵（相似度矩阵）
-        # 对特征进行L2归一化，确保相似度计算不受特征尺度影响
+        # Build the affinity kernel matrix (similarity matrix)
+        # L2-normalize the features to ensure similarity computation is not affected by feature scale
         features = F.normalize(features, p=2, dim=-1)
-        # 基于归一化特征计算affinity矩阵（相似度矩阵）
+        # Compute the affinity matrix (similarity matrix) based on the normalized features
         kernel = self.affinity(features)
-        # 如果需要强制对称性，通过核矩阵与其转置的平均来实现
+        # If symmetry must be enforced, do it by averaging the kernel matrix with its transpose
         if self.force_symmetry:
             kernel = 0.5 * (kernel + kernel.t())
 
-        # 标签传播优化：通过拉普拉斯优化算法更新输出
-        # 结合一元势能和affinity核矩阵进行标签传播，得到优化后的分类结果
+        # Label propagation optimization: update the output via the Laplacian optimization algorithm
+        # Combine the unary potential and the affinity kernel matrix for label propagation to obtain the optimized classification result
         outputs = laplacian_optimization(unary, kernel)
         
-        # 返回经过自适应调整后的输出
+        # Return the output after adaptation
         return outputs
 
     def configure_model(self):
@@ -95,66 +95,66 @@ class LAME(nn.Module):
 
 def laplacian_optimization(unary, kernel, bound_lambda=1, max_steps=100):
     """
-    基于拉普拉斯能量最小化的标签传播优化算法
-    通过迭代更新分类概率分布，最小化包含一元势能、成对势能和熵项的能量函数
+    Label propagation optimization algorithm based on Laplacian energy minimization
+    Iteratively updates the classification probability distribution to minimize an energy function that contains a unary potential, a pairwise potential and an entropy term
     
     Args:
-        unary (torch.Tensor): 一元势能矩阵，形状为 [N, K]，N为样本数，K为类别数
-        kernel (torch.Tensor): Affinity相似度矩阵，形状为 [N, N]，表示样本间的相似度
-        bound_lambda (float): 成对势能的权重系数，控制成对项对能量函数的影响程度
-        max_steps (int): 最大迭代次数，防止优化过程发散
+        unary (torch.Tensor): Unary potential matrix, of shape [N, K], where N is the number of samples and K is the number of classes
+        kernel (torch.Tensor): Affinity similarity matrix, of shape [N, N], representing the similarity between samples
+        bound_lambda (float): Weight coefficient of the pairwise potential, controlling how much the pairwise term affects the energy function
+        max_steps (int): Maximum number of iterations, preventing the optimization process from diverging
         
     Returns:
-        torch.Tensor: 优化后的分类概率分布，形状为 [N, K]
+        torch.Tensor: Optimized classification probability distribution, of shape [N, K]
     """
-    # 存储每次迭代的能量值，用于监控收敛过程
+    # Store the energy value of each iteration, used to monitor the convergence process
     E_list = []
-    # 初始化上一轮能量值为无穷大，用于收敛判断
+    # Initialize the previous energy value to infinity, used for the convergence check
     oldE = float('inf')
-    # 初始化概率分布Y：从一元势能的负对数转换为初始概率（softmax归一化）
+    # Initialize the probability distribution Y: convert the negative log of the unary potential into initial probabilities (softmax normalization)
     Y = (-unary).softmax(-1)  # [N, K]
     
-    # 迭代优化过程
+    # Iterative optimization process
     for i in range(max_steps):
-        # 计算成对势能：bound_lambda * 相似度矩阵 * 当前概率分布
+        # Compute the pairwise potential: bound_lambda * similarity matrix * current probability distribution
         pairwise = bound_lambda * kernel.matmul(Y)  # [N, K]
-        # 指数项：-一元势能 + 成对势能（综合两类势能影响）
+        # Exponent term: -unary potential + pairwise potential (combining the influence of both potentials)
         exponent = -unary + pairwise
-        # 更新概率分布Y：对指数项进行softmax归一化
+        # Update the probability distribution Y: apply softmax normalization to the exponent term
         Y = exponent.softmax(-1)
-        # 计算当前能量值并存储（调用entropy_energy计算综合能量）
+        # Compute and store the current energy value (calls entropy_energy to compute the overall energy)
         E = entropy_energy(Y, unary, pairwise, bound_lambda).item()
         E_list.append(E)
 
-        # 收敛判断：当迭代次数>1且能量变化小于阈值（相对变化<1e-8）时停止迭代
+        # Convergence check: stop iterating when the iteration count > 1 and the energy change is below the threshold (relative change < 1e-8)
         if (i > 1 and (abs(E - oldE) <= 1e-8 * abs(oldE))):
-            # logger.info(f'Converged in {i} iterations')  # 收敛日志（当前注释掉）
+            # logger.info(f'Converged in {i} iterations')  # convergence log (currently commented out)
             break
         else:
-            # 更新上一轮能量值，准备下一次迭代
+            # Update the previous energy value, preparing for the next iteration
             oldE = E
 
-    # 返回优化后的概率分布
+    # Return the optimized probability distribution
     return Y
 
 def entropy_energy(Y, unary, pairwise, bound_lambda):
     """
-    计算拉普拉斯能量函数，综合考虑一元势能、成对势能和熵正则化项
+    Compute the Laplacian energy function, taking the unary potential, the pairwise potential and the entropy regularization term into account
     
-    能量函数公式：E = sum( unary*Y - bound_lambda*pairwise*Y + Y*log(Y) )
-    其中：
-    - unary*Y：一元势能项，惩罚与初始分类不一致的分布
-    - bound_lambda*pairwise*Y：成对势能项，鼓励相似样本有相似分布
-    - Y*log(Y)：熵正则化项，鼓励分布的平滑性
+    Energy function formula: E = sum( unary*Y - bound_lambda*pairwise*Y + Y*log(Y) )
+    where:
+    - unary*Y: unary potential term, penalizing distributions inconsistent with the initial classification
+    - bound_lambda*pairwise*Y: pairwise potential term, encouraging similar samples to have similar distributions
+    - Y*log(Y): entropy regularization term, encouraging smoothness of the distribution
     
     Args:
-        Y (torch.Tensor): 当前分类概率分布，形状 [N, K]
-        unary (torch.Tensor): 一元势能矩阵，形状 [N, K]
-        pairwise (torch.Tensor): 成对势能矩阵，形状 [N, K]
-        bound_lambda (float): 成对势能的权重系数
+        Y (torch.Tensor): Current classification probability distribution, of shape [N, K]
+        unary (torch.Tensor): Unary potential matrix, of shape [N, K]
+        pairwise (torch.Tensor): Pairwise potential matrix, of shape [N, K]
+        bound_lambda (float): Weight coefficient of the pairwise potential
         
     Returns:
-        torch.Tensor: 标量能量值
+        torch.Tensor: Scalar energy value
     """
     E = (unary * Y - bound_lambda * pairwise * Y + Y * torch.log(Y.clip(1e-20))).sum()
     return E
