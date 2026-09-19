@@ -5,14 +5,7 @@ filter_K: 25
 positive:
   enabled: True
   shot_capacity: 25 # 降低容量避免冗余特征
-  alpha: 5.0
-  beta: 9.0            # 优化特征匹配敏感度
 
-negative:
-  enabled: False
-  shot_capacity: 18  # 增加容量捕捉更多负样本模式
-  alpha: 0.25         # 增强负样本抑制强度
-  beta: 0.5        # 强化负样本区分度
   entropy_threshold:
     lower: 0.4    # 放宽下限捕捉更多潜在错误
     upper: 0.7      # 放宽上限包含中等熵样本
@@ -27,14 +20,4 @@ SIGMA: 1.0               # RBF核带宽（仅对 rbf_affinity 有效）
 KNN: 10                  # k近邻参数（rbf 和 kNN 都会使用）
 FORCE_SYMMETRY: false     # 是否强制对称 affinity 矩阵
 
-hus_threshold: 0.5
 
-
-thresh: 0.5
-thresh_gap: 0.1
-thresh_des: 0.05
-temp: 1.
-buffer_size: 25
-
-k: 3
-lam : 0.1
