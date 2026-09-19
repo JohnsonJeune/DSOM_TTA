@@ -1,10 +1,9 @@
-## OFTTA — 纯 CPU 版测试时自适应(TTA)评测工程
+## DSOM — 测试时自适应(TTA)评测工程
 
 本工程基于 [Optimization-Free Test-Time Adaptation for Cross-Person Activity Recognition](https://github.com/Claydon-Wang/OFTTA)(IMWUT/UbiComp 2024)官方实现,
-改造为**纯 CPU 运行**,并在原有方法基础上集成了 9 个常见的 TTA 方法。
+并在原有方法基础上集成了 9 个常见的 TTA 方法。
 
-- 数据集:**UCI-HAR**(5 个 domain,留一交叉验证)
-- 设备:**仅 CPU**,不需要 GPU / CUDA
+- 数据集:**UCI-HAR** **OPPORTUNITY** **PAMAP2**
 - 后端模型:CNN
 
 ### 目录结构
@@ -77,7 +76,7 @@ PY=/path/to/python bash adapt.sh
 | T3A | `t3a` | `t3a.yaml` | 测试时分类器调整(NeurIPS 2021) |
 | TAST | `tast` | `tast.yaml` | 最近邻自训练(ICLR 2023) |
 | TAST-BN | `tast_bn` | `tast_bn.yaml` | TAST 的 BN 变体 |
-| **OFTTA** | `offta` | `offta.yaml` | 本仓库方法(IMWUT 2024) |
+| OFTTA | `offta` | `offta.yaml` | 本仓库方法(IMWUT 2024) |
 | PL | `pl` | `pl.yaml` | 伪标签(ICML Workshop 2013) |
 | SHOT | `shot` | `shot.yaml` | 源假设迁移(ICML 2020) |
 | SAR | `sar` | `sar.yaml` | 稳定测试时自适应(ICLR 2023) |
@@ -91,21 +90,5 @@ PY=/path/to/python bash adapt.sh
 | **RoTTA** | `rotta` | `rotta.yaml` | 鲁棒测试时自适应 |
 | **LAME** | `lame` | `lame.yaml` | 拉普拉斯标签传播(NeurIPS 2022) |
 
-加粗为本次新增/改造的方法。
 
-### 关于 CPU 运行
 
-主干路径(`adapt.py` / `utils.py` / `models/` / `data_processing/` / 上述全部方法)都已是原生 CPU 代码,直接运行即可。
-
-`cpu_env.py` 是兜底垫片:它把 `torch.Tensor.cuda()` 等接口降级为原地返回,防止个别尚未改造的旧文件在无 GPU 机器上抛错。它在 `adapt.py` 顶部被导入,先于任何 TTA 算法模块。
-
-### 引用
-
-```bibtex
-@article{wang2024optimization,
-  title={Optimization-Free Test-Time Adaptation for Cross-Person Activity Recognition},
-  author={Wang, Shuoyuan and Wang, Hangwei and Wang, Jindong and Xie, Xin and others},
-  journal={Proceedings of the ACM on Interactive, Mobile, Wearable and Ubiquitous Technologies},
-  year={2024}
-}
-```
