@@ -2,6 +2,24 @@
 
 **Xiaohui Ye, Lei Zhang, Guangjie Chen, Chaoda Song, Shuoyuan Wang, Hao Wu, Aiguo Song, Senior Member, IEEE**
 
+---
+
+## Experimental Audit Trail
+
+**The experiment logs and statistical tables behind every reported result are included in this repository under [`audit_trail/`](audit_trail/).**
+
+All results in the manuscript were produced under a **unified five-seed protocol** — seeds **10, 42, 64, 100, 256** — using the same subject-level partitioning and validation-based hyperparameter selection throughout. The same protocol was applied to the main comparisons and to the ablation experiments.
+
+| Experiment | `audit_trail/` contents |
+| --- | --- |
+| Main cross-person comparison | Per-seed logs for every method, plus the five-seed average and the metrics table |
+| Ablation study (UCI-HAR / OPPORTUNITY / PAMAP2) | Per-seed ablation tables and the aggregate summary |
+| Backbone experiments | CNN, ResNet, ViT, and DeepConvLSTM across the five seeds |
+| Cross-category (open-set) evaluation | Per-seed open-set logs and score tables |
+| Cross-person statistics | Metrics spreadsheets for the five-seed runs |
+
+All reported means and aggregate values are computed directly from these seed-level runs.
+
 DSOM is a test-time adaptation framework for sensor-based human activity recognition (HAR). It targets the practical setting in which test streams are non-i.i.d., arrive in small batches, and may contain activity categories never seen during training (open-set). Adaptation proceeds in two stages: aligning the feature space through backbone normalization, then refining prototype embeddings via energy-space optimization.
 
 
