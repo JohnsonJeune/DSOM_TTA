@@ -20,6 +20,8 @@ All results in the manuscript were produced under a **unified five-seed protocol
 
 All reported means and aggregate values are computed directly from these seed-level runs.
 
+---
+
 DSOM is a test-time adaptation framework for sensor-based human activity recognition (HAR). It targets the practical setting in which test streams are non-i.i.d., arrive in small batches, and may contain activity categories never seen during training (open-set). Adaptation proceeds in two stages: aligning the feature space through backbone normalization, then refining prototype embeddings via energy-space optimization.
 
 
