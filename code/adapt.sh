@@ -5,7 +5,7 @@ set -u
 
 cd "$(dirname "$0")"
 
-# ---- existing methods ----
+# ---- methods ----
 bash scripts/uci/adapt_source_uci.sh
 bash scripts/uci/adapt_norm_uci.sh
 bash scripts/uci/adapt_t3a_uci.sh
@@ -16,8 +16,6 @@ bash scripts/uci/adapt_sar_uci.sh
 bash scripts/uci/adapt_tast_uci.sh
 bash scripts/uci/adapt_tast_bn_uci.sh
 bash scripts/uci/adapt_oftta_uci.sh
-
-# ---- newly added methods ----
 bash scripts/uci/adapt_dsom_uci.sh
 bash scripts/uci/adapt_eata_uci.sh
 bash scripts/uci/adapt_sotta_uci.sh
