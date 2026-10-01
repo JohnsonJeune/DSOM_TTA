@@ -10,8 +10,6 @@ import torch.nn.functional as F
 def get_classifier(args, model):
     return model.classifier
 
-
-
 class dsom(nn.Module):
     """Tent adapts a model by entropy minimization during testing.
 
@@ -93,16 +91,10 @@ class dsom(nn.Module):
         load_model_and_optimizer(self.model, self.optimizer,
                                  self.model_state, self.optimizer_state)
 
-
-
-
 @torch.jit.script
 def softmax_entropy(x: torch.Tensor) -> torch.Tensor:
     """Entropy of softmax distribution from logits."""
     return -(x.softmax(1) * x.log_softmax(1)).sum(1)
-
-
-
 
 def collect_params(model):
     """Collect the affine scale + shift parameters from batch norms.
@@ -120,14 +112,11 @@ def collect_params(model):
                     names.append(f"{nm}.{np}")
     return params, names
 
-
-
 def copy_model_and_optimizer(model, optimizer):
     """Copy the model and optimizer states for resetting after adaptation."""
     model_state = deepcopy(model.state_dict())
     optimizer_state = deepcopy(optimizer.state_dict())
     return model_state, optimizer_state
-
 
 def load_model_and_optimizer(model, optimizer, model_state, optimizer_state):
     """Restore the model and optimizer states from copies."""
@@ -271,17 +260,12 @@ def run_test_dsom(self, pos_cfg, neg_cfg, x, model, weights, classifier, pos_cac
 
 
 
-
-
-
         partial_labels = ((probs[mask_partial] + self.thresh) > probs_des[mask_partial][:,0].reshape(-1,1)).long()
 
         loss_hard = nn.CrossEntropyLoss()(logits_pasle[mask_hard], logits_pasle[mask_hard].detach().argmax(1))
         loss_partial = cc_loss(logits_pasle[mask_partial], partial_labels.detach())
         lam_hard = sum(mask_hard.long()) / (sum(mask_hard.long()) + sum(mask_partial.long()))
         loss1 = loss_hard * lam_hard + loss_partial * (1 - lam_hard)
-
-
 
         loss1.backward()
         self.optimizer.step()
@@ -323,37 +307,24 @@ def run_test_dsom(self, pos_cfg, neg_cfg, x, model, weights, classifier, pos_cac
     N, K = unary.shape
     # initialize residual
     residual = nn.Parameter(torch.zeros([N, K], device=unary.device))
-
-
     lr =6.
     max_steps = 1
-
     optimizer = torch.optim.Adam([residual], lr=lr)
-
     bound_lambda = 1.
-
-
     oldE = float("inf")
     for i in range(max_steps):
-        
-
         optimizer.zero_grad()
-
-
         # adjust logits
         logit_ = -unary + residual  # [N, K]
         Y = F.softmax(logit_, dim=-1)  # probability distribution [N, K]
         # --- energy function part (formula from the paper) ---
         energy = -torch.logsumexp(logit_, dim=-1)   # [N]
         energy_loss = energy.mean()
-
         # --- pairwise regularization term ---
         pairwise = kernel @ Y   # [N, K]
         pairwise_loss = -bound_lambda * (Y * pairwise).sum() / N
-
         # --- total loss ---
         loss = energy_loss + pairwise_loss
-
         loss.backward()
         optimizer.step()
 
@@ -388,14 +359,8 @@ def entropy_energy(Y, unary, pairwise, bound_lambda):
     unary: [N, K] unary cost
     pairwise: [N, K] adjacency regularization term
     """
-
     E = (unary * Y - bound_lambda * pairwise * Y + Y * torch.log(Y.clamp(min=1e-20))).sum()
-    #E = (unary * Y - bound_lambda * pairwise * Y + Y * torch.log(Y.clamp(min=1e-20))).sum()
     return E
-
-
-
-
 
 class AffinityMatrix:
 
@@ -427,7 +392,6 @@ class kNN_affinity(AffinityMatrix):
         W.scatter_(dim=-1, index=knn_index, value=1.0)
 
         return W
-
 
 class rbf_affinity(AffinityMatrix):
     def __init__(self, sigma: float, **kwargs):
