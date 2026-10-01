@@ -4,7 +4,7 @@ This project is based on the official implementation of [Optimization-Free Test-
 with 9 common TTA methods integrated on top of the original ones.
 
 - Datasets: **UCI-HAR** **OPPORTUNITY** **PAMAP2**
-- Backbone model: CNN
+- Backbone model: CNN 
 - Device: GPU via CUDA, with automatic CPU fallback
 
 ### Device Selection
@@ -95,12 +95,12 @@ Results are written to `./logs/<dataset>/<method>/<domain>/<timestamp>/log.txt` 
 | PL | `pl` | `pl.yaml` | Pseudo-labeling (ICML Workshop 2013) |
 | SHOT | `shot` | `shot.yaml` | Source hypothesis transfer (ICML 2020) |
 | SAR | `sar` | `sar.yaml` | Stable test-time adaptation (ICLR 2023) |
-| **DSOM** | `dsom` | `dsom.yaml` | Dual-space optimization test-time adaptation |
-| **EATA** | `eata` | `eata.yaml` | Efficient anti-forgetting TTA (ICML 2022) |
-| **SoTTA** | `sotta` | `sotta.yaml` | Noise-robust TTA (NeurIPS 2023) |
-| **CoTTA** | `cotta` | `cotta.yaml` | Continual TTA (CVPR 2022) |
-| **TSD** | `tsd` | `tsd.yaml` | Test-time self-distillation (CVPR 2023) |
-| **TEA** | `tea` | `tea.yaml` | Energy-model test-time adaptation |
-| **NOTE** | `note` | `note.yaml` | Online entropy minimization (NeurIPS 2022) |
-| **RoTTA** | `rotta` | `rotta.yaml` | Robust test-time adaptation |
-| **LAME** | `lame` | `lame.yaml` | Laplacian label propagation (NeurIPS 2022) |
+| **EATA | `eata` | `eata.yaml` | Efficient anti-forgetting TTA (ICML 2022) |
+| **SoTTA | `sotta` | `sotta.yaml` | Noise-robust TTA (NeurIPS 2023) |
+| CoTTA | `cotta` | `cotta.yaml` | Continual TTA (CVPR 2022) |
+| TSD | `tsd` | `tsd.yaml` | Test-time self-distillation (CVPR 2023) |
+| TEA | `tea` | `tea.yaml` | Energy-model test-time adaptation |
+| NOTE | `note` | `note.yaml` | Online entropy minimization (NeurIPS 2022) |
+| RoTTA | `rotta` | `rotta.yaml` | Robust test-time adaptation |
+| LAME | `lame` | `lame.yaml` | Laplacian label propagation (NeurIPS 2022) |
+| DSOM | `dsom` | `dsom.yaml` | Dual-space optimization test-time adaptation |
