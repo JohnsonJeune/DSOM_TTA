@@ -139,4 +139,4 @@ def forward_and_adapt(x, model, optimizer, fishers, e_margin, current_model_prob
         current_model_probs = update_model_probs(current_model_probs, probs.mean(0))
     else:
         current_model_probs = probs.mean(0)
-    return outputs, current_model_probs
+    return outputs, current_model_probs 
